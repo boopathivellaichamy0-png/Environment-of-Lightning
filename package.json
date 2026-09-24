@@ -1,0 +1,19 @@
+{
+  "name": "environment-of-lightning",
+  "version": "1.0.0",
+  "description": "⚡ ENVIRONMENT OF LIGHTNING - AI-Driven Real-Time Collaborative IDE with Antigravity CLI",
+  "scripts": {
+    "server": "npm --prefix server run dev",
+    "client": "npm --prefix client run dev"
+  },
+  "keywords": [
+    "collaborative-ide",
+    "crdt",
+    "yjs",
+    "antigravity-cli",
+    "realtime",
+    "ai-agent"
+  ],
+  "author": "Antigravity Team",
+  "license": "MIT"
+}
