@@ -403,7 +403,7 @@ export const Terminal: FC<TerminalProps> = ({
                 if (!showShellDropdown) e.currentTarget.style.background = 'transparent';
               }}
             >
-              <TerminalIcon size={12} color="#00f0ff" />
+              <TerminalIcon size={12} color="#cccccc" />
               <span>{activeSession.name}</span>
               <ChevronDown size={11} color="#969696" />
             </button>

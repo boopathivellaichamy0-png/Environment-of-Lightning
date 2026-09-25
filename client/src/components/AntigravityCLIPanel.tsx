@@ -1,12 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import type { FC, FormEvent, KeyboardEvent } from 'react';
 import {
-  Folder,
   ChevronDown,
   Plus,
-  Mic,
   ArrowRight,
-  Laptop,
   Check,
   RefreshCw,
   Maximize2,
@@ -62,10 +59,10 @@ interface ChatMessageItem {
 
 export const AntigravityCLIPanel: FC<AntigravityCLIPanelProps> = ({
   files,
-  workspaceVersion,
+  workspaceVersion: _workspaceVersion,
   aiState,
-  permissionMode,
-  onSetPermissionMode,
+  permissionMode: _permissionMode,
+  onSetPermissionMode: _onSetPermissionMode,
   onTriggerAI,
   pendingOperation,
   onApplyPatch,
@@ -80,13 +77,9 @@ export const AntigravityCLIPanel: FC<AntigravityCLIPanelProps> = ({
   const [prompt, setPrompt] = useState('');
   const [selectedModel, setSelectedModel] = useState('Gemini 3.8 Flash Medium');
   const [showModelMenu, setShowModelMenu] = useState(false);
-  const [selectedEnv, setSelectedEnv] = useState('Local');
-  const [showEnvMenu, setShowEnvMenu] = useState(false);
-  const [showFolderMenu, setShowFolderMenu] = useState(false);
   const [showMentionMenu, setShowMentionMenu] = useState(false);
   const [showSlashMenu, setShowSlashMenu] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
 
   // Expanded thoughts and tools states (per message id)
   const [expandedThoughts, setExpandedThoughts] = useState<Record<string, boolean>>({});
@@ -281,18 +274,6 @@ export const AntigravityCLIPanel: FC<AntigravityCLIPanelProps> = ({
     setMessages(prev => prev.map(m => m.operationId === opId ? { ...m, applied: true } : m));
   };
 
-  const toggleRecording = () => {
-    if (isRecording) {
-      setIsRecording(false);
-    } else {
-      setIsRecording(true);
-      // Voice dictation simulation
-      setTimeout(() => {
-        setPrompt(prev => (prev ? `${prev} ` : '') + 'Scaffold glassmorphic dashboard with metrics');
-        setIsRecording(false);
-      }, 2400);
-    }
-  };
 
   return (
     <div style={{
@@ -300,153 +281,131 @@ export const AntigravityCLIPanel: FC<AntigravityCLIPanelProps> = ({
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
-      backgroundColor: '#0c0d11',
-      color: '#e2e8f0',
+      backgroundColor: '#181818',
+      color: '#cccccc',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       position: 'relative',
       overflow: 'hidden'
     }}>
-      {/* 1. Authentic Antigravity Header Bar */}
+      {/* 1. Authentic VS Code Agent Header Bar (Image 2) */}
       <div style={{
-        height: '42px',
-        backgroundColor: '#111318',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.07)',
+        height: '35px',
+        backgroundColor: '#181818',
+        borderBottom: '1px solid #2b2b2b',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '0 0.85rem',
+        padding: '0 12px 0 16px',
         userSelect: 'none',
         flexShrink: 0
       }}>
-        {/* Left: Folder Selector + Agent Status */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-          <div style={{ position: 'relative' }}>
-            <button
-              onClick={() => setShowFolderMenu(!showFolderMenu)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                color: '#f8fafc',
-                fontSize: '0.76rem',
-                cursor: 'pointer',
-                padding: '3px 8px',
-                borderRadius: '6px',
-                transition: 'all 0.15s ease'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.borderColor = 'rgba(0, 240, 255, 0.4)'}
-              onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
-            >
-              <Folder size={13} color="#00f0ff" />
-              <span style={{ fontWeight: 600 }}>EOL</span>
-              <ChevronDown size={11} color="#94a3b8" />
-            </button>
-
-            {/* Folder Dropdown */}
-            {showFolderMenu && (
-              <div style={{
-                position: 'absolute',
-                top: '100%',
-                left: 0,
-                marginTop: '4px',
-                width: '220px',
-                background: '#161922',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
-                borderRadius: '8px',
-                boxShadow: '0 8px 30px rgba(0,0,0,0.6)',
-                zIndex: 100,
-                padding: '6px'
-              }}>
-                <div style={{ padding: '4px 8px', fontSize: '0.68rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>
-                  Workspace: EOL (v{workspaceVersion})
-                </div>
-                <div style={{ padding: '4px 8px', fontSize: '0.65rem', color: '#94a3b8' }}>
-                  Path: <code>./server/workspaces/{roomId}/project</code>
-                </div>
-                <div style={{
-                  marginTop: '6px',
-                  padding: '4px 8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  fontSize: '0.66rem',
-                  color: '#9ca3af',
-                  borderTop: '1px solid rgba(255,255,255,0.06)'
-                }}>
-                  <span>Agent Permission Mode:</span>
-                  <span style={{ color: 'var(--lightning-cyan)', fontWeight: 600, textTransform: 'capitalize' }}>
-                    {permissionMode}
-                  </span>
-                </div>
-                <div style={{ display: 'flex', gap: '4px', marginTop: '6px' }}>
-                  {(['suggest', 'execute'] as const).map(mode => (
-                    <button
-                      key={mode}
-                      onClick={() => {
-                        onSetPermissionMode(mode);
-                        setShowFolderMenu(false);
-                      }}
-                      style={{
-                        flex: 1,
-                        padding: '4px',
-                        fontSize: '0.62rem',
-                        borderRadius: '4px',
-                        border: permissionMode === mode ? '1px solid var(--lightning-cyan)' : '1px solid rgba(255,255,255,0.08)',
-                        background: permissionMode === mode ? 'rgba(0, 240, 255, 0.15)' : 'transparent',
-                        color: permissionMode === mode ? '#ffffff' : '#9ca3af',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {mode === 'execute' ? 'Auto-edit (Execute)' : 'Suggest (Review)'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '5px',
-            fontSize: '0.72rem',
-            color: 'var(--lightning-cyan)',
-            fontWeight: 600
-          }}>
-            <Sparkles size={13} />
-            <span>Antigravity Agent</span>
-          </div>
+        {/* Left: Agent Title */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ fontSize: '11px', fontWeight: 600, color: '#cccccc', letterSpacing: '0.02em' }}>
+            Agent
+          </span>
         </div>
 
-        {/* Right: Actions & Expand View */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        {/* Right: Controls (+, History, ..., Close) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <button
             onClick={() => setMessages([])}
             style={{
               background: 'transparent',
               border: 'none',
-              color: '#94a3b8',
-              fontSize: '0.68rem',
+              color: '#858585',
               cursor: 'pointer',
-              padding: '2px 6px'
+              padding: '3px',
+              display: 'flex',
+              alignItems: 'center',
+              borderRadius: '3px'
             }}
-            title="Start fresh conversation"
+            title="New Chat (+)"
+            onMouseEnter={(e) => e.currentTarget.style.color = '#cccccc'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#858585'}
           >
-            + New Chat
+            <Plus size={14} />
+          </button>
+
+          <button
+            onClick={() => {}}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#858585',
+              cursor: 'pointer',
+              padding: '3px',
+              display: 'flex',
+              alignItems: 'center',
+              borderRadius: '3px'
+            }}
+            title="Chat History"
+            onMouseEnter={(e) => e.currentTarget.style.color = '#cccccc'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#858585'}
+          >
+            <RotateCcw size={13} />
+          </button>
+
+          <button
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#858585',
+              cursor: 'pointer',
+              padding: '3px',
+              display: 'flex',
+              alignItems: 'center',
+              borderRadius: '3px'
+            }}
+            title="More Actions..."
+            onMouseEnter={(e) => e.currentTarget.style.color = '#cccccc'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#858585'}
+          >
+            <ChevronRight size={13} style={{ transform: 'rotate(90deg)' }} />
           </button>
 
           {onToggleFullView && (
             <button
               onClick={onToggleFullView}
-              className="btn-icon"
-              title={isFullView ? 'Split IDE View' : 'Full Canvas View'}
-              style={{ width: '24px', height: '24px', borderRadius: '4px', color: '#9ca3af' }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#858585',
+                cursor: 'pointer',
+                padding: '3px',
+                display: 'flex',
+                alignItems: 'center',
+                borderRadius: '3px'
+              }}
+              title={isFullView ? 'Split IDE View' : 'Maximize'}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#cccccc'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#858585'}
             >
               {isFullView ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
             </button>
           )}
+        </div>
+      </div>
+
+      {/* 2. EOL Workspace Title & Login Warning (Image 2) */}
+      <div style={{ padding: '12px 14px 4px 14px', flexShrink: 0 }}>
+        <div style={{ fontSize: '13px', fontWeight: 600, color: '#ffffff', marginBottom: '8px' }}>
+          EOL
+        </div>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '8px 12px',
+          backgroundColor: '#26231a',
+          border: '1px solid #3d3725',
+          borderRadius: '8px',
+          fontSize: '12px',
+          color: '#e5c07b',
+          marginBottom: '6px'
+        }}>
+          <span style={{ fontSize: '13px' }}>⚠️</span>
+          <span>To use the agent, please login here</span>
         </div>
       </div>
 
@@ -901,17 +860,17 @@ export const AntigravityCLIPanel: FC<AntigravityCLIPanelProps> = ({
           </div>
         )}
 
-        {/* The Card */}
+        {/* The Card (Image 2) */}
         <div style={{
           width: '100%',
-          background: '#1b1d22',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '16px',
-          boxShadow: '0 12px 36px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
-          padding: '12px 14px 10px 14px',
+          background: '#202020',
+          border: '1px solid #333333',
+          borderRadius: '10px',
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
+          padding: '10px 12px 8px 12px',
           display: 'flex',
           flexDirection: 'column',
-          gap: '0.65rem',
+          gap: '6px',
           position: 'relative'
         }}>
           {/* Mention @ Popup */}
@@ -919,17 +878,17 @@ export const AntigravityCLIPanel: FC<AntigravityCLIPanelProps> = ({
             <div style={{
               position: 'absolute',
               bottom: '100%',
-              left: '14px',
+              left: '12px',
               marginBottom: '6px',
               width: '220px',
-              background: '#1a1c22',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              borderRadius: '8px',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+              background: '#1e1e1e',
+              border: '1px solid #333333',
+              borderRadius: '6px',
+              boxShadow: '0 6px 20px rgba(0,0,0,0.6)',
               zIndex: 100,
               padding: '4px'
             }}>
-              <div style={{ padding: '4px 8px', fontSize: '0.65rem', color: '#64748b', fontWeight: 600 }}>
+              <div style={{ padding: '4px 8px', fontSize: '10px', color: '#858585', fontWeight: 600 }}>
                 Attach File Context
               </div>
               {Object.keys(files).slice(0, 6).map(f => (
@@ -939,22 +898,22 @@ export const AntigravityCLIPanel: FC<AntigravityCLIPanelProps> = ({
                   style={{
                     width: '100%',
                     textAlign: 'left',
-                    padding: '5px 8px',
-                    borderRadius: '4px',
+                    padding: '4px 8px',
+                    borderRadius: '3px',
                     background: 'transparent',
                     border: 'none',
-                    color: '#ffffff',
-                    fontSize: '0.72rem',
+                    color: '#cccccc',
+                    fontSize: '11px',
                     fontFamily: 'Consolas, monospace',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '5px'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#2a2d2e'}
                   onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                 >
-                  <FileCode size={12} color="var(--lightning-cyan)" />
+                  <FileCode size={12} color="#969696" />
                   <span>{f}</span>
                 </button>
               ))}
@@ -966,18 +925,18 @@ export const AntigravityCLIPanel: FC<AntigravityCLIPanelProps> = ({
             <div style={{
               position: 'absolute',
               bottom: '100%',
-              left: '14px',
+              left: '12px',
               marginBottom: '6px',
-              width: '260px',
-              background: '#1a1c22',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              borderRadius: '8px',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+              width: '250px',
+              background: '#1e1e1e',
+              border: '1px solid #333333',
+              borderRadius: '6px',
+              boxShadow: '0 6px 20px rgba(0,0,0,0.6)',
               zIndex: 100,
               padding: '4px'
             }}>
-              <div style={{ padding: '4px 8px', fontSize: '0.65rem', color: '#64748b', fontWeight: 600 }}>
-                Workflows & Actions
+              <div style={{ padding: '4px 8px', fontSize: '10px', color: '#858585', fontWeight: 600 }}>
+                Actions
               </div>
               {slashActions.map(action => (
                 <button
@@ -986,24 +945,24 @@ export const AntigravityCLIPanel: FC<AntigravityCLIPanelProps> = ({
                   style={{
                     width: '100%',
                     textAlign: 'left',
-                    padding: '6px 8px',
-                    borderRadius: '4px',
+                    padding: '5px 8px',
+                    borderRadius: '3px',
                     background: 'transparent',
                     border: 'none',
-                    color: '#ffffff',
+                    color: '#cccccc',
                     cursor: 'pointer',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '2px'
+                    gap: '1px'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#2a2d2e'}
                   onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ color: 'var(--lightning-cyan)', fontWeight: 700, fontSize: '0.72rem' }}>{action.cmd}</span>
-                    <span style={{ fontSize: '0.72rem', color: '#f1f5f9' }}>{action.label}</span>
+                    <span style={{ color: '#0078d4', fontWeight: 600, fontSize: '11px' }}>{action.cmd}</span>
+                    <span style={{ fontSize: '11px', color: '#ffffff' }}>{action.label}</span>
                   </div>
-                  <span style={{ fontSize: '0.62rem', color: '#64748b' }}>{action.desc}</span>
+                  <span style={{ fontSize: '10px', color: '#858585' }}>{action.desc}</span>
                 </button>
               ))}
             </div>
@@ -1023,7 +982,7 @@ export const AntigravityCLIPanel: FC<AntigravityCLIPanelProps> = ({
               border: 'none',
               outline: 'none',
               color: '#ffffff',
-              fontSize: '0.86rem',
+              fontSize: '12px',
               resize: 'none',
               lineHeight: 1.45,
               fontFamily: 'inherit',
@@ -1036,8 +995,7 @@ export const AntigravityCLIPanel: FC<AntigravityCLIPanelProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            paddingTop: '4px',
-            borderTop: '1px solid rgba(255, 255, 255, 0.05)'
+            paddingTop: '2px'
           }}>
             {/* Left Controls: Plus + Model Selector */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -1046,20 +1004,22 @@ export const AntigravityCLIPanel: FC<AntigravityCLIPanelProps> = ({
                   type="button"
                   onClick={() => setShowAttachMenu(!showAttachMenu)}
                   style={{
-                    width: '26px',
-                    height: '26px',
-                    borderRadius: '50%',
-                    background: 'rgba(255, 255, 255, 0.06)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    color: '#9ca3af',
+                    width: '22px',
+                    height: '22px',
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#858585',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    borderRadius: '3px'
                   }}
                   title="Add context (@ file, terminal)"
+                  onMouseEnter={(e) => e.currentTarget.style.color = '#cccccc'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = '#858585'}
                 >
-                  <Plus size={13} />
+                  <Plus size={14} />
                 </button>
 
                 {showAttachMenu && (
@@ -1069,9 +1029,9 @@ export const AntigravityCLIPanel: FC<AntigravityCLIPanelProps> = ({
                     left: 0,
                     marginBottom: '4px',
                     width: '180px',
-                    background: '#1a1c22',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '6px',
+                    background: '#1e1e1e',
+                    border: '1px solid #333333',
+                    borderRadius: '4px',
                     boxShadow: '0 6px 20px rgba(0,0,0,0.6)',
                     zIndex: 100,
                     padding: '3px'
@@ -1084,19 +1044,21 @@ export const AntigravityCLIPanel: FC<AntigravityCLIPanelProps> = ({
                       style={{
                         width: '100%',
                         textAlign: 'left',
-                        padding: '5px 8px',
-                        borderRadius: '4px',
+                        padding: '4px 8px',
+                        borderRadius: '3px',
                         background: 'transparent',
                         border: 'none',
-                        color: '#fff',
-                        fontSize: '0.72rem',
+                        color: '#cccccc',
+                        fontSize: '11px',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '6px'
                       }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#2a2d2e'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                     >
-                      <FileCode size={12} color="#00f0ff" />
+                      <FileCode size={12} color="#969696" />
                       <span>Attach File Context</span>
                     </button>
                     <button
@@ -1107,26 +1069,28 @@ export const AntigravityCLIPanel: FC<AntigravityCLIPanelProps> = ({
                       style={{
                         width: '100%',
                         textAlign: 'left',
-                        padding: '5px 8px',
-                        borderRadius: '4px',
+                        padding: '4px 8px',
+                        borderRadius: '3px',
                         background: 'transparent',
                         border: 'none',
-                        color: '#fff',
-                        fontSize: '0.72rem',
+                        color: '#cccccc',
+                        fontSize: '11px',
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '6px'
                       }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#2a2d2e'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                     >
-                      <TerminalIcon size={12} color="#4ade80" />
+                      <TerminalIcon size={12} color="#969696" />
                       <span>Execute Terminal</span>
                     </button>
                   </div>
                 )}
               </div>
 
-              {/* Model Dropdown */}
+              {/* Model Dropdown (No Model Selected ⌄ in Image 2) */}
               <div style={{ position: 'relative' }}>
                 <button
                   type="button"
@@ -1137,17 +1101,17 @@ export const AntigravityCLIPanel: FC<AntigravityCLIPanelProps> = ({
                     gap: '4px',
                     background: 'transparent',
                     border: 'none',
-                    color: '#9ca3af',
-                    fontSize: '0.75rem',
+                    color: '#969696',
+                    fontSize: '11px',
                     cursor: 'pointer',
-                    padding: '3px 6px',
-                    borderRadius: '6px'
+                    padding: '2px 4px',
+                    borderRadius: '3px'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = '#ffffff'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = '#9ca3af'}
+                  onMouseEnter={(e) => e.currentTarget.style.color = '#cccccc'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = '#969696'}
                 >
-                  <span style={{ fontWeight: 500 }}>{selectedModel}</span>
-                  <ChevronDown size={12} />
+                  <span>{selectedModel || 'No Model Selected'}</span>
+                  <ChevronDown size={11} color="#858585" />
                 </button>
 
                 {showModelMenu && (
@@ -1156,10 +1120,10 @@ export const AntigravityCLIPanel: FC<AntigravityCLIPanelProps> = ({
                     bottom: '100%',
                     left: 0,
                     marginBottom: '4px',
-                    width: '230px',
-                    background: '#1a1c22',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '8px',
+                    width: '210px',
+                    background: '#1e1e1e',
+                    border: '1px solid #333333',
+                    borderRadius: '4px',
                     boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
                     zIndex: 100,
                     padding: '4px'
@@ -1174,9 +1138,9 @@ export const AntigravityCLIPanel: FC<AntigravityCLIPanelProps> = ({
                         style={{
                           width: '100%',
                           textAlign: 'left',
-                          padding: '6px 8px',
-                          borderRadius: '4px',
-                          background: selectedModel === m.name ? 'rgba(0, 240, 255, 0.12)' : 'transparent',
+                          padding: '5px 8px',
+                          borderRadius: '3px',
+                          background: selectedModel === m.name ? '#2a2d2e' : 'transparent',
                           border: 'none',
                           color: '#ffffff',
                           cursor: 'pointer',
@@ -1186,10 +1150,10 @@ export const AntigravityCLIPanel: FC<AntigravityCLIPanelProps> = ({
                         }}
                       >
                         <div>
-                          <div style={{ fontSize: '0.74rem', fontWeight: 600 }}>{m.name}</div>
-                          <div style={{ fontSize: '0.62rem', color: '#64748b' }}>{m.desc}</div>
+                          <div style={{ fontSize: '11px', fontWeight: 500 }}>{m.name}</div>
+                          <div style={{ fontSize: '10px', color: '#858585' }}>{m.desc}</div>
                         </div>
-                        {selectedModel === m.name && <Check size={13} color="var(--lightning-cyan)" />}
+                        {selectedModel === m.name && <Check size={12} color="#0078d4" />}
                       </button>
                     ))}
                   </div>
@@ -1197,116 +1161,42 @@ export const AntigravityCLIPanel: FC<AntigravityCLIPanelProps> = ({
               </div>
             </div>
 
-            {/* Right Controls: Mic + Send Button */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <button
-                type="button"
-                onClick={toggleRecording}
-                style={{
-                  width: '26px',
-                  height: '26px',
-                  borderRadius: '50%',
-                  background: isRecording ? 'rgba(244, 63, 94, 0.2)' : 'transparent',
-                  border: isRecording ? '1px solid #f43f5e' : 'none',
-                  color: isRecording ? '#f43f5e' : '#9ca3af',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer'
-                }}
-                title={isRecording ? 'Listening...' : 'Voice Dictation'}
-              >
-                <Mic size={14} className={isRecording ? 'animate-pulse' : ''} />
-              </button>
-
+            {/* Right Controls: Send Button (Dark circle with arrow) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <button
                 type="button"
                 onClick={() => handleSubmit()}
                 disabled={!prompt.trim() || isExecuting}
                 style={{
-                  width: '28px',
-                  height: '28px',
+                  width: '26px',
+                  height: '26px',
                   borderRadius: '50%',
-                  background: prompt.trim() && !isExecuting
-                    ? 'linear-gradient(135deg, #00f0ff 0%, #3b82f6 100%)'
-                    : 'rgba(255, 255, 255, 0.08)',
+                  background: prompt.trim() && !isExecuting ? '#383838' : '#282828',
                   border: 'none',
-                  color: prompt.trim() && !isExecuting ? '#060912' : '#64748b',
+                  color: prompt.trim() && !isExecuting ? '#ffffff' : '#6e7681',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   cursor: prompt.trim() && !isExecuting ? 'pointer' : 'default',
-                  boxShadow: prompt.trim() && !isExecuting ? '0 0 12px rgba(0, 240, 255, 0.4)' : 'none',
-                  transition: 'all 0.15s ease'
+                  transition: 'all 0.12s ease'
                 }}
                 title="Send Prompt (Enter)"
               >
-                <ArrowRight size={14} strokeWidth={2.5} />
+                <ArrowRight size={13} strokeWidth={2} />
               </button>
             </div>
           </div>
+        </div>
 
-          {/* Environment Indicator Pill (💻 Local ⌄) */}
-          <div style={{ position: 'relative', marginTop: '-2px' }}>
-            <button
-              type="button"
-              onClick={() => setShowEnvMenu(!showEnvMenu)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                background: 'transparent',
-                border: 'none',
-                color: '#64748b',
-                fontSize: '0.68rem',
-                cursor: 'pointer',
-                padding: 0
-              }}
-            >
-              <Laptop size={11} />
-              <span>{selectedEnv}</span>
-              <ChevronDown size={10} />
-            </button>
-
-            {showEnvMenu && (
-              <div style={{
-                position: 'absolute',
-                bottom: '100%',
-                left: 0,
-                marginBottom: '4px',
-                width: '160px',
-                background: '#1a1c22',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: '6px',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-                zIndex: 100,
-                padding: '3px'
-              }}>
-                {['Local', 'Cloud Workspace', 'Isolated Sandbox'].map(env => (
-                  <button
-                    key={env}
-                    onClick={() => {
-                      setSelectedEnv(env);
-                      setShowEnvMenu(false);
-                    }}
-                    style={{
-                      width: '100%',
-                      textAlign: 'left',
-                      padding: '5px 8px',
-                      borderRadius: '4px',
-                      background: selectedEnv === env ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
-                      border: 'none',
-                      color: '#ffffff',
-                      fontSize: '0.72rem',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {env}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+        {/* 4. Footer Disclaimer (Image 2) */}
+        <div style={{
+          textAlign: 'center',
+          fontSize: '11px',
+          color: '#6e7681',
+          marginTop: '8px',
+          userSelect: 'none'
+        }}>
+          AI may make mistakes. Double-check all generated code.
         </div>
       </div>
     </div>

@@ -5,12 +5,12 @@ import {
   Users,
   Copy,
   Check,
-  Sparkles,
   Eye,
-  Play,
   Terminal as TerminalIcon,
   Layers,
-  ArrowRightLeft
+  ArrowRightLeft,
+  SlidersHorizontal,
+  Bot
 } from 'lucide-react';
 import type { User, AIPermissionMode, AIStateMachineState } from '../types';
 
@@ -47,15 +47,12 @@ export const Navbar: FC<NavbarProps> = ({
   aiState,
   permissionMode,
   onSetPermissionMode,
-  onTriggerAI,
   onOpenDemo,
   onSimulatePeer,
   terminalOpen,
   onToggleTerminal,
   onToggleRightPanel,
-  rightPanelOpen,
-  isAgentFullView = false,
-  onToggleAgentView
+  rightPanelOpen
 }) => {
   const [copied, setCopied] = useState(false);
   const [showRoomModal, setShowRoomModal] = useState(false);
@@ -76,105 +73,99 @@ export const Navbar: FC<NavbarProps> = ({
     }
   };
 
-  // Color mapping and label for AI state badge
   const getAIStateBadge = () => {
     switch (aiState) {
       case 'IDLE':
-        return { color: 'badge-purple', text: 'Idle', icon: '🤖' };
+        return { text: 'Idle', color: '#969696' };
       case 'OBSERVING':
-        return { color: 'badge-cyan', text: 'Observing', icon: '👁️' };
+        return { text: 'Observing', color: '#0078d4' };
       case 'ANALYZING':
-        return { color: 'badge-cyan', text: 'Analyzing...', icon: '🧠' };
+        return { text: 'Analyzing...', color: '#0078d4' };
       case 'PLANNING':
-        return { color: 'badge-purple', text: 'Planning Patches', icon: '📐' };
+        return { text: 'Planning', color: '#cca700' };
       case 'WAITING_FOR_PERMISSION':
-        return { color: 'badge-amber', text: 'Review Pending', icon: '⏳' };
+        return { text: 'Review Pending', color: '#cca700' };
       case 'EXECUTING':
-        return { color: 'badge-cyan', text: 'Executing CLI...', icon: '⚡' };
+        return { text: 'Executing...', color: '#0078d4' };
       case 'VALIDATING':
-        return { color: 'badge-cyan', text: 'Validating v' + workspaceVersion, icon: '🛡️' };
+        return { text: 'Validating', color: '#0078d4' };
       case 'APPLYING':
-        return { color: 'badge-purple', text: 'Applying CRDT', icon: '✨' };
+        return { text: 'Applying CRDT', color: '#89d185' };
       case 'COMPLETED':
-        return { color: 'badge-emerald', text: 'Patches Applied', icon: '✓' };
+        return { text: 'Patches Applied', color: '#89d185' };
       case 'CONFLICT':
-        return { color: 'badge-amber', text: 'Conflict Paused', icon: '⚠️' };
+        return { text: 'Conflict', color: '#f14c4c' };
       default:
-        return { color: 'badge-purple', text: aiState, icon: '🤖' };
+        return { text: 'Active', color: '#969696' };
     }
   };
 
   const aiBadge = getAIStateBadge();
 
   return (
-    <header className="glass-panel" style={{
-      height: '60px',
+    <header style={{
+      height: '42px',
+      width: '100%',
+      backgroundColor: '#181818',
+      borderBottom: '1px solid #2b2b2b',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      padding: '0 1.25rem',
+      padding: '0 12px',
+      userSelect: 'none',
       position: 'relative',
-      zIndex: 50,
-      flexShrink: 0,
-      gap: '1rem',
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08)'
+      zIndex: 20
     }}>
       {/* 1. Left Group: Brand, Room & Sync */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
         {/* Brand Icon + Name */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div style={{
-            width: '34px',
-            height: '34px',
-            borderRadius: '9px',
-            background: 'linear-gradient(135deg, rgba(0, 240, 255, 0.18) 0%, rgba(168, 85, 247, 0.28) 100%)',
-            border: '1px solid rgba(0, 240, 255, 0.35)',
+            width: '26px',
+            height: '26px',
+            borderRadius: '4px',
+            background: '#252526',
+            border: '1px solid #333333',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 0 14px var(--lightning-cyan-glow), inset 0 1px 0 rgba(255, 255, 255, 0.25)',
+            color: '#0078d4',
             flexShrink: 0
           }}>
-            <Zap size={18} color="var(--lightning-cyan)" className="animate-lightning" />
+            <Zap size={15} />
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', whiteSpace: 'nowrap' }}>
-            <div style={{
-              fontFamily: 'var(--font-display)',
-              fontWeight: 800,
-              fontSize: '0.88rem',
-              letterSpacing: '0.04em',
-              background: 'linear-gradient(90deg, #ffffff 0%, #00f0ff 65%, #c084fc 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              lineHeight: 1.2
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', whiteSpace: 'nowrap' }}>
+            <span style={{
+              fontWeight: 600,
+              fontSize: '12px',
+              color: '#cccccc',
+              letterSpacing: '0.02em'
             }}>
               ENVIRONMENT OF LIGHTNING
-            </div>
-            <div style={{
-              fontSize: '0.62rem',
-              color: 'var(--text-muted)',
-              letterSpacing: '0.08em',
-              fontWeight: 600,
-              lineHeight: 1.2
-            }}>
-              AI-ORCHESTRATED REAL-TIME IDE
-            </div>
+            </span>
           </div>
         </div>
 
         <div className="glass-divider" />
 
         {/* Room Pill */}
-        <div className="glass-pill" style={{ padding: '0.22rem 0.55rem', gap: '0.45rem' }}>
-          <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.04em' }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          background: '#252526',
+          border: '1px solid #333333',
+          borderRadius: '4px',
+          padding: '2px 8px'
+        }}>
+          <span style={{ fontSize: '11px', color: '#858585', fontWeight: 500 }}>
             ROOM
           </span>
           <span style={{
-            fontSize: '0.78rem',
-            fontFamily: 'var(--font-mono)',
-            fontWeight: 700,
-            color: 'var(--lightning-cyan)',
-            letterSpacing: '0.02em'
+            fontSize: '11px',
+            fontFamily: 'Consolas, monospace',
+            fontWeight: 600,
+            color: '#cccccc'
           }}>
             {roomId}
           </span>
@@ -185,60 +176,58 @@ export const Navbar: FC<NavbarProps> = ({
               background: 'transparent',
               border: 'none',
               cursor: 'pointer',
-              color: copied ? 'var(--accent-emerald)' : 'var(--text-muted)',
+              color: copied ? '#89d185' : '#858585',
               display: 'flex',
               alignItems: 'center',
-              padding: '2px',
-              borderRadius: '4px',
-              transition: 'color 0.15s ease'
+              padding: '1px'
             }}
           >
-            {copied ? <Check size={12} /> : <Copy size={12} />}
+            {copied ? <Check size={11} /> : <Copy size={11} />}
           </button>
           <button
             onClick={() => setShowRoomModal(true)}
             title="Switch or Join Room"
             style={{
-              background: 'rgba(255, 255, 255, 0.08)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              color: 'var(--text-secondary)',
-              fontSize: '0.65rem',
-              fontWeight: 600,
+              background: '#2a2d2e',
+              border: '1px solid #383838',
+              color: '#cccccc',
+              fontSize: '10px',
               cursor: 'pointer',
-              padding: '2px 6px',
-              borderRadius: '4px',
+              padding: '1px 5px',
+              borderRadius: '3px',
               display: 'flex',
               alignItems: 'center',
-              gap: '3px',
-              transition: 'all 0.15s ease'
+              gap: '3px'
             }}
           >
-            <ArrowRightLeft size={10} />
+            <ArrowRightLeft size={9} />
             <span>Switch</span>
           </button>
         </div>
 
         {/* Sync Status Capsule */}
-        <div className="glass-pill" style={{ padding: '0.22rem 0.55rem', gap: '0.4rem' }} title="CRDT Real-Time Sync & 1s Persistence">
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          background: '#252526',
+          border: '1px solid #333333',
+          borderRadius: '4px',
+          padding: '2px 8px'
+        }}>
           <span style={{
-            width: '7px',
-            height: '7px',
+            width: '6px',
+            height: '6px',
             borderRadius: '50%',
-            backgroundColor: isSyncing ? 'var(--accent-amber)' : 'var(--lightning-cyan)',
-            boxShadow: isSyncing ? '0 0 8px var(--accent-amber)' : '0 0 8px var(--lightning-cyan)',
-            flexShrink: 0
-          }} className={isSyncing ? 'animate-spin' : 'animate-pulse-glow'} />
-          <span style={{ fontSize: '0.7rem', color: isSyncing ? '#fde68a' : '#e2e8f0', fontWeight: 500 }}>
+            backgroundColor: isSyncing ? '#cca700' : '#89d185'
+          }} />
+          <span style={{ fontSize: '11px', color: '#cccccc' }}>
             {syncStatus.replace('✓ ', '')}
           </span>
           <span style={{
-            fontSize: '0.65rem',
-            fontFamily: 'var(--font-mono)',
-            padding: '1px 5px',
-            borderRadius: '4px',
-            background: 'rgba(255, 255, 255, 0.06)',
-            color: 'var(--text-secondary)',
-            border: '1px solid rgba(255, 255, 255, 0.08)'
+            fontSize: '10px',
+            fontFamily: 'Consolas, monospace',
+            color: '#858585'
           }}>
             v{workspaceVersion}
           </span>
@@ -246,218 +235,220 @@ export const Navbar: FC<NavbarProps> = ({
       </div>
 
       {/* 2. Middle Group: AI Agent Status & Mode Segmented Switch */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
         {/* Antigravity AI Status Capsule */}
-        <div className={`badge ${aiBadge.color}`} style={{ padding: '4px 10px', fontSize: '0.72rem', gap: '6px' }}>
-          <span>{aiBadge.icon}</span>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600 }}>Antigravity:</span>
-          <span style={{ fontWeight: 700 }}>{aiBadge.text}</span>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          background: '#252526',
+          border: '1px solid #333333',
+          borderRadius: '4px',
+          padding: '2px 8px',
+          fontSize: '11px'
+        }}>
+          <Bot size={13} color={aiBadge.color} />
+          <span style={{ color: '#858585' }}>Antigravity:</span>
+          <span style={{ color: aiBadge.color, fontWeight: 600 }}>{aiBadge.text}</span>
         </div>
 
-        {/* Segmented Mode Selector */}
-        <div className="glass-segmented">
+        {/* Segmented Mode Selector (Image 2 style) */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          background: '#202020',
+          border: '1px solid #2b2b2b',
+          borderRadius: '4px',
+          padding: '2px',
+          gap: '2px'
+        }}>
           <button
             onClick={() => onSetPermissionMode('observe')}
             title="Observe: AI reads context without editing code"
             style={{
-              padding: '4px 10px',
-              fontSize: '0.72rem',
-              borderRadius: '6px',
+              padding: '2px 8px',
+              fontSize: '11px',
+              borderRadius: '3px',
               border: 'none',
               cursor: 'pointer',
-              background: permissionMode === 'observe' ? 'rgba(255,255,255,0.12)' : 'transparent',
-              color: permissionMode === 'observe' ? '#ffffff' : 'var(--text-muted)',
+              background: permissionMode === 'observe' ? '#0078d4' : 'transparent',
+              color: permissionMode === 'observe' ? '#ffffff' : '#858585',
               display: 'flex',
               alignItems: 'center',
               gap: '4px',
-              fontWeight: permissionMode === 'observe' ? 600 : 500,
-              boxShadow: permissionMode === 'observe' ? '0 1px 3px rgba(0,0,0,0.3)' : 'none',
-              transition: 'all 0.18s ease'
+              fontWeight: 500
             }}
           >
-            <Eye size={12} />
+            <Eye size={11} />
             <span>Observe</span>
           </button>
           <button
             onClick={() => onSetPermissionMode('suggest')}
-            title="Suggest: AI proposes patches for manual review (Recommended)"
+            title="Suggest: AI proposes patches for review"
             style={{
-              padding: '4px 10px',
-              fontSize: '0.72rem',
-              borderRadius: '6px',
-              border: permissionMode === 'suggest' ? '1px solid rgba(168,85,247,0.35)' : '1px solid transparent',
+              padding: '2px 8px',
+              fontSize: '11px',
+              borderRadius: '3px',
+              border: 'none',
               cursor: 'pointer',
-              background: permissionMode === 'suggest' ? 'rgba(168,85,247,0.22)' : 'transparent',
-              color: permissionMode === 'suggest' ? '#d8b4fe' : 'var(--text-muted)',
+              background: permissionMode === 'suggest' ? '#0078d4' : 'transparent',
+              color: permissionMode === 'suggest' ? '#ffffff' : '#858585',
               display: 'flex',
               alignItems: 'center',
               gap: '4px',
-              fontWeight: permissionMode === 'suggest' ? 600 : 500,
-              boxShadow: permissionMode === 'suggest' ? '0 0 10px rgba(168,85,247,0.25)' : 'none',
-              transition: 'all 0.18s ease'
+              fontWeight: 500
             }}
           >
-            <Sparkles size={12} />
+            <SlidersHorizontal size={11} />
             <span>Suggest</span>
           </button>
           <button
             onClick={() => onSetPermissionMode('execute')}
-            title="Execute: AI autonomously applies patches via CRDT"
+            title="Execute: AI edits files directly"
             style={{
-              padding: '4px 10px',
-              fontSize: '0.72rem',
-              borderRadius: '6px',
-              border: permissionMode === 'execute' ? '1px solid rgba(0,240,255,0.35)' : '1px solid transparent',
+              padding: '2px 8px',
+              fontSize: '11px',
+              borderRadius: '3px',
+              border: 'none',
               cursor: 'pointer',
-              background: permissionMode === 'execute' ? 'rgba(0,240,255,0.18)' : 'transparent',
-              color: permissionMode === 'execute' ? 'var(--lightning-cyan)' : 'var(--text-muted)',
+              background: permissionMode === 'execute' ? '#0078d4' : 'transparent',
+              color: permissionMode === 'execute' ? '#ffffff' : '#858585',
               display: 'flex',
               alignItems: 'center',
               gap: '4px',
-              fontWeight: permissionMode === 'execute' ? 600 : 500,
-              boxShadow: permissionMode === 'execute' ? '0 0 10px rgba(0,240,255,0.25)' : 'none',
-              transition: 'all 0.18s ease'
+              fontWeight: 500
             }}
           >
-            <Zap size={12} />
+            <Zap size={11} />
             <span>Execute</span>
           </button>
         </div>
       </div>
 
       {/* 3. Right Group: Collaborators, Actions & Panel Toggles */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
         {/* Collaborative Presence Avatars */}
         <div style={{ display: 'flex', alignItems: 'center', padding: '0 4px' }} title={`${activeUsers.length} user(s) collaborating in room`}>
           {activeUsers.slice(0, 4).map((user, idx) => (
             <div
               key={user.id}
               style={{
-                width: '26px',
-                height: '26px',
+                width: '22px',
+                height: '22px',
                 borderRadius: '50%',
-                background: user.color || '#00f0ff',
-                color: '#000000',
+                background: user.color || '#0078d4',
+                color: '#ffffff',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontWeight: 700,
-                fontSize: '0.7rem',
-                border: user.id === currentUser.id ? '2px solid #ffffff' : '2px solid rgba(11, 15, 24, 0.9)',
-                marginLeft: idx === 0 ? '0' : '-7px',
+                fontWeight: 600,
+                fontSize: '10px',
+                border: '1px solid #181818',
+                marginLeft: idx === 0 ? '0' : '-6px',
                 cursor: 'pointer',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
-                position: 'relative',
-                zIndex: 10 - idx,
-                transition: 'transform 0.15s ease'
+                zIndex: 10 - idx
               }}
               title={user.id === currentUser.id ? `${user.name} (You)` : user.name}
             >
               {user.name.charAt(0).toUpperCase()}
             </div>
           ))}
-          {activeUsers.length > 4 && (
-            <div style={{
-              width: '24px',
-              height: '24px',
-              borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.15)',
-              color: '#fff',
-              fontSize: '0.65rem',
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginLeft: '-6px',
-              border: '2px solid rgba(11, 15, 24, 0.9)',
-              backdropFilter: 'blur(4px)'
-            }}>
-              +{activeUsers.length - 4}
-            </div>
-          )}
         </div>
 
         {/* Simulate Peer Button */}
         <button
           onClick={onSimulatePeer}
-          className="btn-secondary"
-          title="Simulate second collaborator (Priya) for live CRDT co-editing"
-          style={{ padding: '0.35rem 0.65rem', fontSize: '0.74rem' }}
+          title="Simulate Peer Collaborator"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '3px 8px',
+            fontSize: '11px',
+            background: '#252526',
+            border: '1px solid #333333',
+            color: '#cccccc',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = '#2a2d2e'}
+          onMouseLeave={(e) => e.currentTarget.style.background = '#252526'}
         >
-          <Users size={13} color="var(--accent-pink)" />
+          <Users size={12} />
           <span>+Peer</span>
         </button>
 
-        {/* AI Assist Button */}
-        <button
-          onClick={onTriggerAI}
-          className="btn-ai"
-          title="Trigger Antigravity AI Code Inspection & Generation"
-        >
-          <Sparkles size={13} />
-          <span>AI Assist</span>
-        </button>
-
-        {/* Demo Tour Button */}
+        {/* Demo Walkthrough Button */}
         <button
           onClick={onOpenDemo}
-          className="btn-primary"
-          title="Open interactive 10-step collaborative demo walkthrough"
+          title="10-Step Scenario Walkthrough"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '3px 8px',
+            fontSize: '11px',
+            background: '#252526',
+            border: '1px solid #333333',
+            color: '#cccccc',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = '#2a2d2e'}
+          onMouseLeave={(e) => e.currentTarget.style.background = '#252526'}
         >
-          <Play size={13} />
-          <span>Demo Tour</span>
+          <Layers size={12} />
+          <span>Demo</span>
         </button>
-
-        {/* Antigravity Model View Toggle (Matches Screenshot: [ A Open IDE ]) */}
-        {onToggleAgentView && (
-          <button
-            onClick={onToggleAgentView}
-            className="btn-secondary"
-            title={isAgentFullView ? "Switch back to IDE Code Editor" : "Open Antigravity Full Agent View"}
-            style={{
-              padding: '0.35rem 0.7rem',
-              fontSize: '0.74rem',
-              gap: '6px',
-              background: isAgentFullView ? 'rgba(0, 240, 255, 0.16)' : 'rgba(255, 255, 255, 0.05)',
-              borderColor: isAgentFullView ? 'var(--lightning-cyan)' : 'var(--border-subtle)',
-              color: '#ffffff'
-            }}
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="#00f0ff">
-              <path d="M12 3L4 21h4l4-8 4 8h4L12 3z" />
-            </svg>
-            <span style={{ fontWeight: 600 }}>{isAgentFullView ? "Open IDE" : "Antigravity"}</span>
-          </button>
-        )}
 
         <div className="glass-divider" />
 
-        {/* Terminal Toggle Button */}
+        {/* Terminal Toggle */}
         <button
           onClick={onToggleTerminal}
-          className="btn-icon"
-          title="Toggle Terminal Console"
+          title="Toggle Terminal Panel (Ctrl+`)"
           style={{
-            background: terminalOpen ? 'rgba(0,240,255,0.14)' : 'rgba(255,255,255,0.03)',
-            color: terminalOpen ? 'var(--lightning-cyan)' : 'var(--text-secondary)',
-            borderColor: terminalOpen ? 'rgba(0,240,255,0.3)' : 'transparent'
+            width: '28px',
+            height: '28px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '4px',
+            background: terminalOpen ? '#2a2d2e' : 'transparent',
+            border: '1px solid transparent',
+            color: terminalOpen ? '#ffffff' : '#858585',
+            cursor: 'pointer'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = '#ffffff'}
+          onMouseLeave={(e) => {
+            if (!terminalOpen) e.currentTarget.style.color = '#858585';
           }}
         >
-          <TerminalIcon size={15} />
+          <TerminalIcon size={14} />
         </button>
 
-        {/* Right Sidebar Toggle Button */}
+        {/* Right AI Panel Toggle */}
         <button
           onClick={onToggleRightPanel}
-          className="btn-icon"
-          title="Toggle AI Motto, Chat & Activity Drawer"
+          title="Toggle Agent Panel"
           style={{
-            background: rightPanelOpen ? 'rgba(168,85,247,0.14)' : 'rgba(255,255,255,0.03)',
-            color: rightPanelOpen ? 'var(--ai-purple)' : 'var(--text-secondary)',
-            borderColor: rightPanelOpen ? 'rgba(168,85,247,0.3)' : 'transparent'
+            width: '28px',
+            height: '28px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '4px',
+            background: rightPanelOpen ? '#2a2d2e' : 'transparent',
+            border: '1px solid transparent',
+            color: rightPanelOpen ? '#ffffff' : '#858585',
+            cursor: 'pointer'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = '#ffffff'}
+          onMouseLeave={(e) => {
+            if (!rightPanelOpen) e.currentTarget.style.color = '#858585';
           }}
         >
-          <Layers size={15} />
+          <Bot size={15} />
         </button>
       </div>
 
@@ -467,84 +458,77 @@ export const Navbar: FC<NavbarProps> = ({
           position: 'fixed',
           top: 0,
           left: 0,
-          width: '100vw',
-          height: '100vh',
-          background: 'rgba(4, 7, 15, 0.75)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           zIndex: 1000
         }}>
-          <div className="glass-panel-elevated" style={{
-            width: '400px',
-            padding: '1.75rem',
-            borderRadius: '14px',
-            border: '1px solid rgba(0, 240, 255, 0.25)',
-            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 240, 255, 0.15)'
+          <div style={{
+            width: '340px',
+            padding: '1.25rem',
+            background: '#1e1e1e',
+            border: '1px solid #333333',
+            borderRadius: '6px',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.6)'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
-              <div style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '8px',
-                background: 'rgba(0, 240, 255, 0.15)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '1px solid rgba(0, 240, 255, 0.3)'
-              }}>
-                <Zap size={18} color="var(--lightning-cyan)" />
-              </div>
-              <h3 style={{
-                fontFamily: 'var(--font-display)',
-                fontWeight: 700,
-                fontSize: '1.05rem',
-                color: '#ffffff',
-                letterSpacing: '0.02em'
-              }}>
-                Join or Switch Room
-              </h3>
-            </div>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '1.25rem' }}>
-              Enter a project room ID (e.g. <strong style={{ color: 'var(--lightning-cyan)' }}>DEV-AI-7824</strong>) to synchronize real-time code, AI state, and active collaborators.
+            <h3 style={{ fontSize: '13px', fontWeight: 600, color: '#ffffff', marginBottom: '8px' }}>
+              Switch Workspace Room
+            </h3>
+            <p style={{ fontSize: '11px', color: '#969696', marginBottom: '12px' }}>
+              Enter room code (e.g. DEV-AI-7824):
             </p>
             <form onSubmit={handleRoomSubmit}>
-              <div style={{ position: 'relative', marginBottom: '1.25rem' }}>
-                <input
-                  type="text"
-                  placeholder="DEV-AI-XXXX"
-                  value={inputRoomId}
-                  onChange={(e) => setInputRoomId(e.target.value)}
-                  autoFocus
-                  style={{
-                    width: '100%',
-                    padding: '0.65rem 0.85rem',
-                    borderRadius: '8px',
-                    background: 'rgba(0, 0, 0, 0.45)',
-                    border: '1px solid rgba(255, 255, 255, 0.15)',
-                    color: '#ffffff',
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.9rem',
-                    outline: 'none',
-                    transition: 'border-color 0.2s ease',
-                    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.4)'
-                  }}
-                  onFocus={(e) => e.target.style.borderColor = 'var(--lightning-cyan)'}
-                  onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.15)'}
-                />
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.65rem' }}>
+              <input
+                type="text"
+                placeholder="DEV-AI-7824"
+                value={inputRoomId}
+                onChange={(e) => setInputRoomId(e.target.value)}
+                autoFocus
+                style={{
+                  width: '100%',
+                  padding: '6px 10px',
+                  background: '#252526',
+                  border: '1px solid #3c3c3c',
+                  borderRadius: '4px',
+                  color: '#ffffff',
+                  fontSize: '12px',
+                  outline: 'none',
+                  marginBottom: '12px'
+                }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
                 <button
                   type="button"
                   onClick={() => setShowRoomModal(false)}
-                  className="btn-secondary"
+                  style={{
+                    padding: '4px 10px',
+                    fontSize: '11px',
+                    background: 'transparent',
+                    border: '1px solid #333333',
+                    color: '#969696',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
                 >
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary">
-                  Enter Room
+                <button
+                  type="submit"
+                  style={{
+                    padding: '4px 12px',
+                    fontSize: '11px',
+                    background: '#0078d4',
+                    border: 'none',
+                    color: '#ffffff',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontWeight: 500
+                  }}
+                >
+                  Join
                 </button>
               </div>
             </form>

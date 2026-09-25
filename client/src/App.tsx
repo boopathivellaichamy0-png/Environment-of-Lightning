@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Navbar } from './components/Navbar';
+import { ActivityBar } from './components/ActivityBar';
 import { FileExplorer } from './components/FileExplorer';
 import { EditorPane } from './components/EditorPane';
 import { AntigravityCLIPanel } from './components/AntigravityCLIPanel';
@@ -74,6 +75,7 @@ export function App() {
   const [rightPanelTab, setRightPanelTab] = useState<'cli' | 'chat' | 'activity'>('cli');
   const [demoModalOpen, setDemoModalOpen] = useState<boolean>(false);
   const [isAgentFullView, setIsAgentFullView] = useState<boolean>(false);
+  const [activityTab, setActivityTab] = useState<'explorer' | 'search' | 'git' | 'debug' | 'extensions'>('explorer');
 
   // WebSocket Reference
   const wsRef = useRef<WebSocket | null>(null);
@@ -561,196 +563,199 @@ export function App() {
         </div>
       ) : (
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-        {/* Left: File Explorer */}
-        <FileExplorer
-          files={files}
-          activeFile={activeFile}
-          onSelectFile={(path) => {
-            if (!openTabs.includes(path)) {
-              setOpenTabs(prev => [...prev, path]);
-            }
-            setActiveFile(path);
-          }}
-          onCreateFile={handleCreateFile}
-          onDeleteFile={handleDeleteFile}
-          onRenameFile={handleRenameFile}
-          activeUsers={activeUsers}
-          currentUser={currentUser}
-        />
-
-        {/* Center: Monaco Editor & Bottom Terminal */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <EditorPane
-            files={files}
-            openTabs={openTabs}
-            activeFile={activeFile}
-            onSelectTab={handleSelectTab}
-            onCloseTab={handleCloseTab}
-            onContentChange={handleContentChange}
-            onCursorChange={handleCursorChange}
-            activeUsers={activeUsers}
+          {/* Leftmost Activity Bar (48px) */}
+          <ActivityBar
+            activeTab={activityTab}
+            onSelectTab={setActivityTab}
             currentUser={currentUser}
-            aiMarkers={aiMarkers}
-            workspaceVersion={workspaceVersion}
           />
 
-          {/* Bottom Terminal Drawer */}
-          {terminalOpen && (
-            <Terminal
-              logs={terminalLogs}
+          {/* Left: File Explorer */}
+          {activityTab === 'explorer' && (
+            <FileExplorer
               files={files}
-              onClear={() => setTerminalLogs([])}
-              onClose={() => setTerminalOpen(false)}
-              onExecuteCommand={handleExecuteCLICommand}
-              roomId={roomId}
+              activeFile={activeFile}
+              onSelectFile={(path) => {
+                if (!openTabs.includes(path)) {
+                  setOpenTabs(prev => [...prev, path]);
+                }
+                setActiveFile(path);
+              }}
+              onCreateFile={handleCreateFile}
+              onDeleteFile={handleDeleteFile}
+              onRenameFile={handleRenameFile}
+              activeUsers={activeUsers}
+              currentUser={currentUser}
             />
           )}
-        </div>
 
-        {/* Right: Antigravity CLI Builder, Chat, and Activity Stream */}
-        {rightPanelOpen && (
-          <aside className="glass-panel" style={{
-            width: '350px',
-            height: '100%',
-            borderLeft: '1px solid var(--border-subtle)',
-            display: 'flex',
-            flexDirection: 'column',
-            backgroundColor: 'var(--bg-surface)',
-            boxShadow: '-4px 0 24px rgba(0, 0, 0, 0.4)'
-          }}>
-            {/* Glass Tab Selector */}
-            <div style={{
+          {/* Center: Monaco Editor & Bottom Terminal */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+            <EditorPane
+              files={files}
+              openTabs={openTabs}
+              activeFile={activeFile}
+              onSelectTab={handleSelectTab}
+              onCloseTab={handleCloseTab}
+              onContentChange={handleContentChange}
+              onCursorChange={handleCursorChange}
+              activeUsers={activeUsers}
+              currentUser={currentUser}
+              aiMarkers={aiMarkers}
+              workspaceVersion={workspaceVersion}
+            />
+
+            {/* Bottom Terminal Drawer */}
+            {terminalOpen && (
+              <Terminal
+                logs={terminalLogs}
+                files={files}
+                onClear={() => setTerminalLogs([])}
+                onClose={() => setTerminalOpen(false)}
+                onExecuteCommand={handleExecuteCLICommand}
+                roomId={roomId}
+              />
+            )}
+          </div>
+
+          {/* Right: Antigravity CLI Builder, Chat, and Activity Stream */}
+          {rightPanelOpen && (
+            <aside style={{
+              width: '380px',
+              height: '100%',
+              borderLeft: '1px solid #2b2b2b',
               display: 'flex',
-              alignItems: 'center',
-              padding: '6px 8px',
-              borderBottom: '1px solid var(--border-subtle)',
-              background: 'rgba(0, 0, 0, 0.25)',
-              gap: '4px'
+              flexDirection: 'column',
+              backgroundColor: '#181818',
+              flexShrink: 0
             }}>
-              <button
-                onClick={() => setRightPanelTab('cli')}
-                style={{
-                  flex: 1.2,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '5px',
-                  padding: '6px 8px',
-                  fontSize: '0.74rem',
-                  fontWeight: 600,
-                  fontFamily: 'var(--font-display)',
-                  borderRadius: '6px',
-                  border: rightPanelTab === 'cli' ? '1px solid rgba(0, 240, 255, 0.35)' : '1px solid transparent',
-                  cursor: 'pointer',
-                  background: rightPanelTab === 'cli' ? 'rgba(0, 240, 255, 0.16)' : 'transparent',
-                  color: rightPanelTab === 'cli' ? 'var(--lightning-cyan)' : 'var(--text-muted)',
-                  boxShadow: rightPanelTab === 'cli' ? '0 0 10px rgba(0, 240, 255, 0.2)' : 'none',
-                  transition: 'all 0.18s ease',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                <span>⚡ Antigravity CLI</span>
-              </button>
-              <button
-                onClick={() => setRightPanelTab('chat')}
-                style={{
-                  flex: 0.9,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '5px',
-                  padding: '6px 8px',
-                  fontSize: '0.74rem',
-                  fontWeight: 600,
-                  fontFamily: 'var(--font-display)',
-                  borderRadius: '6px',
-                  border: rightPanelTab === 'chat' ? '1px solid rgba(168, 85, 247, 0.35)' : '1px solid transparent',
-                  cursor: 'pointer',
-                  background: rightPanelTab === 'chat' ? 'rgba(168, 85, 247, 0.14)' : 'transparent',
-                  color: rightPanelTab === 'chat' ? '#d8b4fe' : 'var(--text-muted)',
-                  boxShadow: rightPanelTab === 'chat' ? '0 0 10px rgba(168, 85, 247, 0.2)' : 'none',
-                  transition: 'all 0.18s ease'
-                }}
-              >
-                <span>💬 Chat</span>
-                {chats.length > 0 && (
-                  <span style={{
-                    fontSize: '0.62rem',
-                    padding: '1px 5px',
-                    borderRadius: '9999px',
-                    background: 'rgba(168, 85, 247, 0.25)',
-                    color: '#d8b4fe'
-                  }}>
-                    {chats.length}
-                  </span>
-                )}
-              </button>
-              <button
-                onClick={() => setRightPanelTab('activity')}
-                style={{
-                  flex: 0.9,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '5px',
-                  padding: '6px 8px',
-                  fontSize: '0.74rem',
-                  fontWeight: 600,
-                  fontFamily: 'var(--font-display)',
-                  borderRadius: '6px',
-                  border: rightPanelTab === 'activity' ? '1px solid rgba(56, 189, 248, 0.35)' : '1px solid transparent',
-                  cursor: 'pointer',
-                  background: rightPanelTab === 'activity' ? 'rgba(56, 189, 248, 0.14)' : 'transparent',
-                  color: rightPanelTab === 'activity' ? '#38bdf8' : 'var(--text-muted)',
-                  boxShadow: rightPanelTab === 'activity' ? '0 0 10px rgba(56, 189, 248, 0.2)' : 'none',
-                  transition: 'all 0.18s ease'
-                }}
-              >
-                <span>📊 Activity</span>
-              </button>
-            </div>
-
-            {/* Tab Content */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: rightPanelTab === 'cli' ? '0' : '1rem', display: 'flex', flexDirection: 'column' }}>
-              {rightPanelTab === 'cli' && (
-                <AntigravityCLIPanel
-                  files={files}
-                  workspaceVersion={workspaceVersion}
-                  aiState={aiState}
-                  permissionMode={permissionMode}
-                  onSetPermissionMode={handleSetPermissionMode}
-                  onTriggerAI={handleTriggerAI}
-                  pendingOperation={pendingOperation}
-                  onApplyPatch={handleApplyAIPatch}
-                  onRejectPatch={handleRejectAIPatch}
-                  onReanalyzePatch={handleReanalyzeAIPatch}
-                  activeFile={activeFile}
-                  onSelectFile={(filePath) => {
-                    if (!openTabs.includes(filePath)) {
-                      setOpenTabs(prev => [...prev, filePath]);
-                    }
-                    setActiveFile(filePath);
+              {/* VS Code Dark Modern Tab Bar */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '4px 8px',
+                borderBottom: '1px solid #2b2b2b',
+                background: '#181818',
+                gap: '4px'
+              }}>
+                <button
+                  onClick={() => setRightPanelTab('cli')}
+                  style={{
+                    flex: 1.2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '5px',
+                    padding: '5px 8px',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    borderRadius: '4px',
+                    border: rightPanelTab === 'cli' ? '1px solid #333333' : '1px solid transparent',
+                    cursor: 'pointer',
+                    background: rightPanelTab === 'cli' ? '#252526' : 'transparent',
+                    color: rightPanelTab === 'cli' ? '#ffffff' : '#858585',
+                    transition: 'all 0.12s ease',
+                    whiteSpace: 'nowrap'
                   }}
-                  isFullView={false}
-                  onToggleFullView={() => setIsAgentFullView(true)}
-                  roomId={roomId}
-                />
-              )}
+                >
+                  <span>⚡ Agent</span>
+                </button>
+                <button
+                  onClick={() => setRightPanelTab('chat')}
+                  style={{
+                    flex: 0.9,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '5px',
+                    padding: '5px 8px',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    borderRadius: '4px',
+                    border: rightPanelTab === 'chat' ? '1px solid #333333' : '1px solid transparent',
+                    cursor: 'pointer',
+                    background: rightPanelTab === 'chat' ? '#252526' : 'transparent',
+                    color: rightPanelTab === 'chat' ? '#ffffff' : '#858585',
+                    transition: 'all 0.12s ease'
+                  }}
+                >
+                  <span>💬 Chat</span>
+                  {chats.length > 0 && (
+                    <span style={{
+                      fontSize: '10px',
+                      padding: '1px 5px',
+                      borderRadius: '10px',
+                      background: '#333333',
+                      color: '#cccccc'
+                    }}>
+                      {chats.length}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setRightPanelTab('activity')}
+                  style={{
+                    flex: 0.9,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '5px',
+                    padding: '5px 8px',
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    borderRadius: '4px',
+                    border: rightPanelTab === 'activity' ? '1px solid #333333' : '1px solid transparent',
+                    cursor: 'pointer',
+                    background: rightPanelTab === 'activity' ? '#252526' : 'transparent',
+                    color: rightPanelTab === 'activity' ? '#ffffff' : '#858585',
+                    transition: 'all 0.12s ease'
+                  }}
+                >
+                  <span>📊 Activity</span>
+                </button>
+              </div>
 
-              {rightPanelTab === 'chat' && (
-                <ChatPanel
-                  chats={chats}
-                  onSendMessage={handleSendMessage}
-                  currentUser={currentUser}
-                />
-              )}
+              {/* Tab Content */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: rightPanelTab === 'cli' ? '0' : '1rem', display: 'flex', flexDirection: 'column' }}>
+                {rightPanelTab === 'cli' && (
+                  <AntigravityCLIPanel
+                    files={files}
+                    workspaceVersion={workspaceVersion}
+                    aiState={aiState}
+                    permissionMode={permissionMode}
+                    onSetPermissionMode={handleSetPermissionMode}
+                    onTriggerAI={handleTriggerAI}
+                    pendingOperation={pendingOperation}
+                    onApplyPatch={handleApplyAIPatch}
+                    onRejectPatch={handleRejectAIPatch}
+                    onReanalyzePatch={handleReanalyzeAIPatch}
+                    activeFile={activeFile}
+                    onSelectFile={(filePath) => {
+                      if (!openTabs.includes(filePath)) {
+                        setOpenTabs(prev => [...prev, filePath]);
+                      }
+                      setActiveFile(filePath);
+                    }}
+                    isFullView={false}
+                    onToggleFullView={() => setIsAgentFullView(true)}
+                    roomId={roomId}
+                  />
+                )}
 
-              {rightPanelTab === 'activity' && (
-                <ActivityStream activities={activities} />
-              )}
-            </div>
-          </aside>
-        )}
+                {rightPanelTab === 'chat' && (
+                  <ChatPanel
+                    chats={chats}
+                    onSendMessage={handleSendMessage}
+                    currentUser={currentUser}
+                  />
+                )}
+
+                {rightPanelTab === 'activity' && (
+                  <ActivityStream activities={activities} />
+                )}
+              </div>
+            </aside>
+          )}
       </div>
       )}
 

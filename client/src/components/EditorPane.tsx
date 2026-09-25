@@ -2,7 +2,18 @@ import { useEffect, useRef, useState } from 'react';
 import type { FC } from 'react';
 import Editor from '@monaco-editor/react';
 import type { OnMount, OnChange } from '@monaco-editor/react';
-import { X, Sparkles, Check, FileCode } from 'lucide-react';
+import {
+  X,
+  Sparkles,
+  Split,
+  Play,
+  MoreHorizontal,
+  ChevronRight,
+  Code2,
+  FileCode,
+  FileText,
+  Palette
+} from 'lucide-react';
 import type { ProjectFile, User, AIMarker } from '../types';
 
 interface EditorPaneProps {
@@ -27,10 +38,7 @@ export const EditorPane: FC<EditorPaneProps> = ({
   onCloseTab,
   onContentChange,
   onCursorChange,
-  activeUsers,
-  currentUser,
-  aiMarkers,
-  workspaceVersion
+  aiMarkers
 }) => {
   const editorRef = useRef<any>(null);
   const monacoRef = useRef<any>(null);
@@ -39,7 +47,6 @@ export const EditorPane: FC<EditorPaneProps> = ({
 
   const currentFileObj = activeFile ? files[activeFile] : null;
 
-  // Detect language from file extension
   const getLanguage = (filePath: string | null) => {
     if (!filePath) return 'javascript';
     if (filePath.endsWith('.jsx') || filePath.endsWith('.tsx')) return 'javascript';
@@ -52,39 +59,57 @@ export const EditorPane: FC<EditorPaneProps> = ({
     return 'plaintext';
   };
 
+  const getFileIcon = (fileName: string) => {
+    if (fileName.endsWith('.jsx') || fileName.endsWith('.tsx')) {
+      return <Code2 size={13} color="#4fc1ff" />;
+    }
+    if (fileName.endsWith('.js') || fileName.endsWith('.ts')) {
+      return <FileCode size={13} color="#e5c07b" />;
+    }
+    if (fileName.endsWith('.css')) {
+      return <Palette size={13} color="#42a5f5" />;
+    }
+    if (fileName.endsWith('.html')) {
+      return <Code2 size={13} color="#e06c75" />;
+    }
+    if (fileName.endsWith('.md')) {
+      return <FileText size={13} color="#c678dd" />;
+    }
+    return <FileCode size={13} color="#969696" />;
+  };
+
   const handleEditorMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
 
-    // Define Custom Electric Dark Theme
-    monaco.editor.defineTheme('lightning-theme', {
+    // Define authentic VS Code Dark Modern Theme
+    monaco.editor.defineTheme('vscode-dark-modern', {
       base: 'vs-dark',
       inherit: true,
       rules: [
-        { token: 'comment', foreground: '64748b', fontStyle: 'italic' },
-        { token: 'keyword', foreground: '00f0ff', fontStyle: 'bold' },
-        { token: 'string', foreground: '34d399' },
-        { token: 'number', foreground: 'f59e0b' },
-        { token: 'type', foreground: 'a855f7' },
-        { token: 'identifier', foreground: 'f8fafc' },
-        { token: 'delimiter', foreground: '94a3b8' }
+        { token: 'comment', foreground: '6a9955', fontStyle: 'italic' },
+        { token: 'keyword', foreground: '569cd6' },
+        { token: 'string', foreground: 'ce9178' },
+        { token: 'number', foreground: 'b5cea8' },
+        { token: 'type', foreground: '4ec9b0' },
+        { token: 'identifier', foreground: '9cdcfe' },
+        { token: 'delimiter', foreground: 'd4d4d4' }
       ],
       colors: {
-        'editor.background': '#07090e',
-        'editor.foreground': '#f8fafc',
-        'editor.lineHighlightBackground': '#11172688',
-        'editorCursor.foreground': '#00f0ff',
-        'editorLineNumber.foreground': '#334155',
-        'editorLineNumber.activeForeground': '#00f0ff',
-        'editorGutter.background': '#07090e',
-        'editor.selectionBackground': '#00f0ff22',
-        'editor.inactiveSelectionBackground': '#00f0ff11'
+        'editor.background': '#1e1e1e',
+        'editor.foreground': '#d4d4d4',
+        'editor.lineHighlightBackground': '#282828',
+        'editorCursor.foreground': '#aeafad',
+        'editorLineNumber.foreground': '#858585',
+        'editorLineNumber.activeForeground': '#c6c6c6',
+        'editorGutter.background': '#1e1e1e',
+        'editor.selectionBackground': '#264f78',
+        'editor.inactiveSelectionBackground': '#3a3d41'
       }
     });
 
-    monaco.editor.setTheme('lightning-theme');
+    monaco.editor.setTheme('vscode-dark-modern');
 
-    // Track Cursor Position
     editor.onDidChangeCursorPosition((e: any) => {
       if (activeFile) {
         onCursorChange(activeFile, { line: e.position.lineNumber, ch: e.position.column });
@@ -92,62 +117,41 @@ export const EditorPane: FC<EditorPaneProps> = ({
     });
   };
 
-  // Update AI & Collaborator Decorations
   useEffect(() => {
     if (!editorRef.current || !monacoRef.current || !activeFile) return;
 
     const newDecorations: any[] = [];
-
-    // 1. AI Changed Lines Highlights (Section 19: Visual Distinction)
-    const fileAiMarkers = aiMarkers.filter(m => m.file === activeFile);
-    for (const marker of fileAiMarkers) {
+    aiMarkers.filter(m => m.file === activeFile).forEach(marker => {
+      const lineNum = marker.line ?? marker.startLine ?? 1;
       newDecorations.push({
-        range: new monacoRef.current.Range(marker.startLine, 1, marker.endLine, 1),
+        range: new monacoRef.current.Range(lineNum, 1, lineNum, 1),
         options: {
           isWholeLine: true,
           className: 'monaco-ai-line-highlight',
-          linesDecorationsClassName: 'monaco-ai-gutter-glyph',
-          hoverMessage: { value: '⚡ **Modified by Antigravity CLI** via CRDT' }
+          glyphMarginClassName: 'monaco-ai-gutter-glyph',
+          hoverMessage: { value: `**Antigravity CLI**: ${marker.message || 'Modified by Antigravity'}` }
         }
       });
+    });
+
+    setDecorations(editorRef.current.deltaDecorations(decorations, newDecorations));
+  }, [aiMarkers, activeFile]);
+
+  useEffect(() => {
+    if (!editorRef.current || !activeFile || !currentFileObj) return;
+    const currentVal = editorRef.current.getValue();
+    if (currentVal !== currentFileObj.content) {
+      isRemoteEditRef.current = true;
+      const position = editorRef.current.getPosition();
+      editorRef.current.setValue(currentFileObj.content || '');
+      if (position) editorRef.current.setPosition(position);
+      isRemoteEditRef.current = false;
     }
+  }, [currentFileObj?.content, activeFile]);
 
-    // 2. Peer Collaborator Cursors
-    const peersOnThisFile = activeUsers.filter(u => u.currentFile === activeFile && u.id !== currentUser.id);
-    for (const peer of peersOnThisFile) {
-      if (peer.cursor) {
-        newDecorations.push({
-          range: new monacoRef.current.Range(peer.cursor.line, peer.cursor.ch, peer.cursor.line, peer.cursor.ch + 1),
-          options: {
-            className: `peer-cursor-${peer.id}`,
-            before: {
-              content: ` ${peer.name}`,
-              inlineClassName: 'remote-cursor-label'
-            }
-          }
-        });
-      }
-    }
-
-    const appliedIds = editorRef.current.deltaDecorations(decorations, newDecorations);
-    setDecorations(appliedIds);
-  }, [activeFile, aiMarkers, activeUsers]);
-
-  const handleEditorChange: OnChange = (value, ev) => {
-    if (!activeFile || isRemoteEditRef.current) return;
-    const newContent = value || '';
-
-    // Calculate delta for fast CRDT streaming
-    if (ev && ev.changes && ev.changes.length > 0) {
-      const change = ev.changes[0];
-      onContentChange(activeFile, newContent, {
-        index: change.rangeOffset,
-        deleteCount: change.rangeLength,
-        insertText: change.text
-      });
-    } else {
-      onContentChange(activeFile, newContent);
-    }
+  const handleEditorChange: OnChange = (val) => {
+    if (isRemoteEditRef.current || !activeFile) return;
+    onContentChange(activeFile, val || '');
   };
 
   return (
@@ -156,80 +160,169 @@ export const EditorPane: FC<EditorPaneProps> = ({
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
-      backgroundColor: '#07090e',
+      backgroundColor: '#1e1e1e',
       position: 'relative',
       overflow: 'hidden'
     }}>
-      {/* File Tabs Bar */}
+      {/* 1. File Tabs Bar */}
       <div style={{
-        height: '38px',
-        backgroundColor: 'rgba(8, 12, 22, 0.8)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        borderBottom: '1px solid var(--border-subtle)',
+        height: '35px',
+        backgroundColor: '#181818',
+        borderBottom: '1px solid #2b2b2b',
         display: 'flex',
         alignItems: 'center',
-        padding: '0 4px',
-        gap: '2px',
+        justifyContent: 'space-between',
+        padding: '0',
         overflowX: 'auto',
-        overflowY: 'hidden'
+        overflowY: 'hidden',
+        userSelect: 'none'
       }}>
-        {openTabs.map((tabPath) => {
-          const file = files[tabPath];
-          const isActive = activeFile === tabPath;
-          const fileName = tabPath.split('/').pop() || tabPath;
+        {/* Tab Items */}
+        <div style={{ display: 'flex', alignItems: 'center', height: '100%', overflowX: 'auto' }}>
+          {openTabs.map((tabPath) => {
+            const file = files[tabPath];
+            const isActive = activeFile === tabPath;
+            const fileName = tabPath.split('/').pop() || tabPath;
 
-          return (
-            <div
-              key={tabPath}
-              onClick={() => onSelectTab(tabPath)}
-              style={{
-                height: '32px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0 0.85rem',
-                borderRadius: '6px 6px 0 0',
-                backgroundColor: isActive ? 'rgba(14, 20, 36, 0.95)' : 'transparent',
-                border: isActive ? '1px solid rgba(0, 240, 255, 0.25)' : '1px solid transparent',
-                borderBottom: 'none',
-                color: isActive ? '#ffffff' : 'var(--text-secondary)',
-                fontSize: '0.78rem',
-                fontFamily: 'var(--font-mono)',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                boxShadow: isActive ? '0 -2px 10px rgba(0, 240, 255, 0.12)' : 'none',
-                transition: 'all 0.15s ease'
-              }}
-              onMouseEnter={(e) => {
-                if (!isActive) e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.04)';
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';
-              }}
-            >
-              <span style={{ fontWeight: isActive ? 600 : 400 }}>{fileName}</span>
-              {file?.isAiModified && (
-                <span title="AI Modified" style={{ display: 'inline-flex' }}>
-                  <Sparkles size={11} color="var(--ai-purple)" />
-                </span>
-              )}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onCloseTab(tabPath);
+            return (
+              <div
+                key={tabPath}
+                onClick={() => onSelectTab(tabPath)}
+                style={{
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '0 12px',
+                  backgroundColor: isActive ? '#1e1e1e' : '#181818',
+                  borderRight: '1px solid #2b2b2b',
+                  borderTop: isActive ? '1px solid #0078d4' : '1px solid transparent',
+                  color: isActive ? '#ffffff' : '#969696',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  transition: 'background 0.1s ease'
                 }}
-                className="btn-icon"
-                style={{ width: '16px', height: '16px', marginLeft: '2px', borderRadius: '4px' }}
+                onMouseEnter={(e) => {
+                  if (!isActive) e.currentTarget.style.backgroundColor = '#1f1f1f';
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) e.currentTarget.style.backgroundColor = '#181818';
+                }}
               >
-                <X size={11} />
-              </button>
-            </div>
-          );
-        })}
+                {getFileIcon(fileName)}
+                <span>{fileName}</span>
+                {file?.isAiModified && (
+                  <span title="AI Modified" style={{ display: 'inline-flex' }}>
+                    <Sparkles size={11} color="#0078d4" />
+                  </span>
+                )}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onCloseTab(tabPath);
+                  }}
+                  title="Close (Ctrl+W)"
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    marginLeft: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#858585',
+                    borderRadius: '3px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#333333';
+                    e.currentTarget.style.color = '#ffffff';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#858585';
+                  }}
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Tab Right Controls (Image 2) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2px', paddingRight: '8px' }}>
+          <button
+            title="Split Editor Right"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#858585',
+              padding: '4px',
+              borderRadius: '3px'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = '#cccccc'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#858585'}
+          >
+            <Split size={14} />
+          </button>
+          <button
+            title="Run Code"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#858585',
+              padding: '4px',
+              borderRadius: '3px'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = '#cccccc'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#858585'}
+          >
+            <Play size={13} />
+          </button>
+          <button
+            title="More Actions"
+            style={{
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: '#858585',
+              padding: '4px',
+              borderRadius: '3px'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = '#cccccc'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#858585'}
+          >
+            <MoreHorizontal size={14} />
+          </button>
+        </div>
       </div>
 
-      {/* Editor Body */}
+      {/* 2. Breadcrumbs Bar (Image 2) */}
+      {activeFile && (
+        <div style={{
+          height: '24px',
+          backgroundColor: '#1e1e1e',
+          borderBottom: '1px solid #282828',
+          display: 'flex',
+          alignItems: 'center',
+          padding: '0 12px',
+          gap: '4px',
+          fontSize: '11px',
+          color: '#8c8c8c',
+          userSelect: 'none'
+        }}>
+          <span>client</span>
+          <ChevronRight size={12} color="#6e7681" />
+          <span style={{ color: '#cccccc' }}>{activeFile}</span>
+        </div>
+      )}
+
+      {/* 3. Editor Body or Empty State */}
       <div style={{ flex: 1, position: 'relative' }}>
         {activeFile && currentFileObj ? (
           <Editor
@@ -241,18 +334,18 @@ export const EditorPane: FC<EditorPaneProps> = ({
             onChange={handleEditorChange}
             options={{
               fontSize: 13,
-              fontFamily: "'JetBrains Mono', monospace",
+              fontFamily: "'Consolas', 'Courier New', monospace",
               fontLigatures: true,
               minimap: { enabled: true, maxColumn: 80 },
               scrollBeyondLastLine: false,
               automaticLayout: true,
               tabSize: 2,
               wordWrap: 'on',
+              lineNumbers: 'on',
+              renderLineHighlight: 'line',
               cursorBlinking: 'smooth',
-              cursorSmoothCaretAnimation: 'on',
               smoothScrolling: true,
-              renderLineHighlight: 'all',
-              bracketPairColorization: { enabled: true }
+              theme: 'vscode-dark-modern'
             }}
           />
         ) : (
@@ -262,61 +355,23 @@ export const EditorPane: FC<EditorPaneProps> = ({
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            color: 'var(--text-muted)',
-            gap: '1rem'
+            color: '#6e7681',
+            gap: '12px',
+            backgroundColor: '#1e1e1e',
+            userSelect: 'none'
           }}>
-            <div className="glass-card" style={{
-              padding: '2rem 3rem',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '0.85rem',
-              border: '1px solid var(--border-glow)'
-            }}>
-              <FileCode size={42} color="var(--lightning-cyan)" />
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: '0.95rem', color: '#ffffff', fontWeight: 600 }}>
-                Select a file from the explorer to begin collaborating
+            <Code2 size={42} strokeWidth={1} color="#333333" />
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '13px', fontWeight: 500, color: '#969696', marginBottom: '4px' }}>
+                Select a file from the explorer to begin editing
               </div>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                Live CRDT multi-user editing with Antigravity AI Orchestration
-              </p>
+              <div style={{ fontSize: '11px', color: '#6e7681' }}>
+                Multiplayer real-time CRDT collaboration active
+              </div>
             </div>
           </div>
         )}
       </div>
-
-      {/* Status Bar */}
-      <footer style={{
-        height: '26px',
-        backgroundColor: 'rgba(7, 10, 18, 0.85)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        borderTop: '1px solid var(--border-subtle)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 1rem',
-        fontSize: '0.68rem',
-        fontFamily: 'var(--font-mono)',
-        color: 'var(--text-muted)',
-        userSelect: 'none'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span style={{ color: 'var(--lightning-cyan)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
-            ⚡ {activeFile || 'No file selected'}
-          </span>
-          <span>Version: v{currentFileObj?.version || 1}</span>
-          <span>WS Base: v{workspaceVersion}</span>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span>UTF-8</span>
-          <span>{getLanguage(activeFile).toUpperCase()}</span>
-          <span style={{ color: 'var(--accent-emerald)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Check size={11} /> Auto-persist: 1s
-          </span>
-        </div>
-      </footer>
     </main>
   );
 };
