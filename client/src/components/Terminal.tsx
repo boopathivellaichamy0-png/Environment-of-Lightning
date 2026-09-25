@@ -197,7 +197,37 @@ export const Terminal: FC<TerminalProps> = ({
     // Append prompt line immediately
     setLines(prev => [...prev, promptLine]);
 
-    // Execute on real system via backend API
+    // Direct Host Execution if running in Electron
+    if (window.electronAPI) {
+      try {
+        const result = await window.electronAPI.executeCommand(trimmed);
+        const outputText = result.stdout || result.stderr || (result.success ? 'Command completed successfully.' : '');
+        if (outputText && outputText.trim()) {
+          setLines(prev => [
+            ...prev,
+            {
+              id: `out-${Date.now()}`,
+              type: result.success ? 'output' : 'error',
+              text: outputText,
+              timestamp: Date.now()
+            }
+          ]);
+        }
+      } catch (err: any) {
+        setLines(prev => [
+          ...prev,
+          {
+            id: `err-${Date.now()}`,
+            type: 'error',
+            text: `PowerShell Error: ${err.message}`,
+            timestamp: Date.now()
+          }
+        ]);
+      }
+      return;
+    }
+
+    // Otherwise execute via server REST API
     try {
       const res = await fetch(`/api/rooms/${roomId}/terminal/exec`, {
         method: 'POST',

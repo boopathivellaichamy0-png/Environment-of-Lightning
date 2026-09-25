@@ -2,9 +2,14 @@
   "name": "environment-of-lightning",
   "version": "1.0.0",
   "description": "⚡ ENVIRONMENT OF LIGHTNING - AI-Driven Real-Time Collaborative IDE with Antigravity CLI",
+  "main": "electron/main.cjs",
   "scripts": {
     "server": "npm --prefix server run dev",
-    "client": "npm --prefix client run dev"
+    "client": "npm --prefix client run dev",
+    "build:client": "npm --prefix client run build",
+    "electron:dev": "concurrently \"npm run client\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:start": "electron .",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
   },
   "keywords": [
     "collaborative-ide",
@@ -15,5 +20,11 @@
     "ai-agent"
   ],
   "author": "Antigravity Team",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^10.0.5",
+    "cross-env": "^10.1.0",
+    "electron": "^44.4.5",
+    "wait-on": "^9.1.0"
+  }
 }

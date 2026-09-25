@@ -77,8 +77,27 @@ export function App() {
   const [isAgentFullView, setIsAgentFullView] = useState<boolean>(false);
   const [activityTab, setActivityTab] = useState<'explorer' | 'search' | 'git' | 'debug' | 'extensions'>('explorer');
 
-  // WebSocket Reference
+  // References
   const wsRef = useRef<WebSocket | null>(null);
+  const autoSaveTimersRef = useRef<Record<string, any>>({});
+
+  // Detect Native Electron Environment
+  useEffect(() => {
+    if (window.electronAPI) {
+      window.electronAPI.getSystemInfo().then((info) => {
+        setTerminalLogs(prev => [
+          ...prev,
+          {
+            id: `electron-${Date.now()}`,
+            timestamp: Date.now(),
+            level: 'ai',
+            source: 'antigravity-cli',
+            message: `⚡ Native Electron Host active on ${info.platform} (${info.arch}). Direct host PowerShell & local file system enabled.`
+          }
+        ]);
+      });
+    }
+  }, []);
 
   // Connect to WebSocket Server
   useEffect(() => {
@@ -332,6 +351,22 @@ export function App() {
       }
     }));
 
+    // Continuous Auto-Save (500ms debounce) to local disk when running in native Electron
+    if (window.electronAPI) {
+      if (autoSaveTimersRef.current[filePath]) {
+        clearTimeout(autoSaveTimersRef.current[filePath]);
+      }
+      autoSaveTimersRef.current[filePath] = setTimeout(async () => {
+        try {
+          await window.electronAPI?.writeFile(filePath, newContent);
+          setSyncStatus('✓ Auto-Saved to Disk');
+          setIsSyncing(false);
+        } catch (err) {
+          console.error('Auto-save error:', err);
+        }
+      }, 500);
+    }
+
     // Send immediate CRDT delta over WebSocket (no 1-second delay!)
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN && delta) {
       wsRef.current.send(JSON.stringify({
@@ -344,6 +379,49 @@ export function App() {
           userId: currentUser.id
         }
       }));
+    }
+  };
+
+  // Open Local Workspace Folder
+  const handleOpenFolder = async () => {
+    if (window.electronAPI) {
+      const selectedDir = await window.electronAPI.openDirectory();
+      if (!selectedDir) return;
+
+      const dirData = await window.electronAPI.readDirectory(selectedDir);
+      if (dirData.success && dirData.entries) {
+        const loadedFiles: Record<string, ProjectFile> = {};
+        for (const entry of dirData.entries) {
+          if (!entry.isDirectory) {
+            const fileRes = await window.electronAPI.readFile(entry.path);
+            loadedFiles[entry.name] = {
+              id: `file_${entry.name}`,
+              name: entry.name,
+              path: entry.path,
+              type: 'file',
+              content: fileRes.content || '',
+              version: 1,
+              lastModifiedAt: Date.now()
+            };
+          }
+        }
+        setFiles(loadedFiles);
+        const fileNames = Object.keys(loadedFiles);
+        if (fileNames.length > 0) {
+          setOpenTabs([fileNames[0]]);
+          setActiveFile(fileNames[0]);
+        }
+        setTerminalLogs(prev => [
+          ...prev,
+          {
+            id: `open-${Date.now()}`,
+            timestamp: Date.now(),
+            level: 'info',
+            source: 'system',
+            message: `📂 Opened workspace folder: ${selectedDir} (${fileNames.length} file(s) loaded)`
+          }
+        ]);
+      }
     }
   };
 
@@ -584,6 +662,7 @@ export function App() {
               onCreateFile={handleCreateFile}
               onDeleteFile={handleDeleteFile}
               onRenameFile={handleRenameFile}
+              onOpenFolder={handleOpenFolder}
               activeUsers={activeUsers}
               currentUser={currentUser}
             />

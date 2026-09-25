@@ -3,6 +3,7 @@ import type { FC } from 'react';
 import {
   FileCode,
   FilePlus,
+  FolderOpen,
   Trash2,
   Edit2,
   Code2,
@@ -21,6 +22,7 @@ interface FileExplorerProps {
   onCreateFile: (filePath: string) => void;
   onDeleteFile: (filePath: string) => void;
   onRenameFile: (oldPath: string, newPath: string) => void;
+  onOpenFolder?: () => void;
   activeUsers: User[];
   currentUser: User;
 }
@@ -32,6 +34,7 @@ export const FileExplorer: FC<FileExplorerProps> = ({
   onCreateFile,
   onDeleteFile,
   onRenameFile,
+  onOpenFolder,
   activeUsers,
   currentUser
 }) => {
@@ -108,6 +111,26 @@ export const FileExplorer: FC<FileExplorerProps> = ({
       }}>
         <span>Explorer</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+          {onOpenFolder && (
+            <button
+              onClick={onOpenFolder}
+              title="Open Local Workspace Folder..."
+              style={{
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#969696',
+                display: 'flex',
+                alignItems: 'center',
+                padding: '3px',
+                borderRadius: '3px'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#ffffff'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#969696'}
+            >
+              <FolderOpen size={14} />
+            </button>
+          )}
           <button
             onClick={() => setIsCreating(true)}
             title="New File..."

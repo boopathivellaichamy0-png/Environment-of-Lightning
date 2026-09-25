@@ -143,3 +143,36 @@ export interface AIMarker {
   line?: number;
   message?: string;
 }
+
+export interface ElectronAPI {
+  isElectron: boolean;
+  openDirectory: () => Promise<string | null>;
+  readDirectory: (dirPath?: string) => Promise<{
+    success: boolean;
+    path: string;
+    entries: Array<{ name: string; path: string; isDirectory: boolean }>;
+    error?: string;
+  }>;
+  readFile: (filePath: string) => Promise<{ success: boolean; content?: string; error?: string }>;
+  writeFile: (filePath: string, content: string) => Promise<{ success: boolean; error?: string }>;
+  executeCommand: (command: string, cwd?: string) => Promise<{
+    success: boolean;
+    stdout: string;
+    stderr: string;
+    exitCode: number;
+  }>;
+  getSystemInfo: () => Promise<{
+    platform: string;
+    arch: string;
+    nodeVersion: string;
+    homeDir: string;
+    appData: string;
+    cwd: string;
+  }>;
+}
+
+declare global {
+  interface Window {
+    electronAPI?: ElectronAPI;
+  }
+}
