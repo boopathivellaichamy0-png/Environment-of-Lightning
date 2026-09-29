@@ -4,6 +4,7 @@ import { ActivityBar } from './components/ActivityBar';
 import { FileExplorer } from './components/FileExplorer';
 import { EditorPane } from './components/EditorPane';
 import { AntigravityCLIPanel } from './components/AntigravityCLIPanel';
+import { AntigravityIframePanel } from './components/AntigravityIframePanel';
 import { ChatPanel } from './components/ChatPanel';
 import { ActivityStream } from './components/ActivityStream';
 import { Terminal } from './components/Terminal';
@@ -76,6 +77,7 @@ export function App() {
   const [demoModalOpen, setDemoModalOpen] = useState<boolean>(false);
   const [isAgentFullView, setIsAgentFullView] = useState<boolean>(false);
   const [activityTab, setActivityTab] = useState<'explorer' | 'search' | 'git' | 'debug' | 'extensions'>('explorer');
+  const [agentViewMode, setAgentViewMode] = useState<'iframe' | 'cli'>('iframe');
 
   // References
   const wsRef = useRef<WebSocket | null>(null);
@@ -616,28 +618,37 @@ export function App() {
       {/* Main View Area (Agent Full View vs Split IDE View) */}
       {isAgentFullView ? (
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-          <AntigravityCLIPanel
-            files={files}
-            workspaceVersion={workspaceVersion}
-            aiState={aiState}
-            permissionMode={permissionMode}
-            onSetPermissionMode={handleSetPermissionMode}
-            onTriggerAI={handleTriggerAI}
-            pendingOperation={pendingOperation}
-            onApplyPatch={handleApplyAIPatch}
-            onRejectPatch={handleRejectAIPatch}
-            onReanalyzePatch={handleReanalyzeAIPatch}
-            activeFile={activeFile}
-            onSelectFile={(filePath) => {
-              if (!openTabs.includes(filePath)) {
-                setOpenTabs(prev => [...prev, filePath]);
-              }
-              setActiveFile(filePath);
-            }}
-            isFullView={true}
-            onToggleFullView={() => setIsAgentFullView(false)}
-            roomId={roomId}
-          />
+          {agentViewMode === 'iframe' ? (
+            <AntigravityIframePanel
+              isFullView={true}
+              onToggleFullView={() => setIsAgentFullView(false)}
+              onSwitchToCLI={() => setAgentViewMode('cli')}
+              roomId={roomId}
+            />
+          ) : (
+            <AntigravityCLIPanel
+              files={files}
+              workspaceVersion={workspaceVersion}
+              aiState={aiState}
+              permissionMode={permissionMode}
+              onSetPermissionMode={handleSetPermissionMode}
+              onTriggerAI={handleTriggerAI}
+              pendingOperation={pendingOperation}
+              onApplyPatch={handleApplyAIPatch}
+              onRejectPatch={handleRejectAIPatch}
+              onReanalyzePatch={handleReanalyzeAIPatch}
+              activeFile={activeFile}
+              onSelectFile={(filePath) => {
+                if (!openTabs.includes(filePath)) {
+                  setOpenTabs(prev => [...prev, filePath]);
+                }
+                setActiveFile(filePath);
+              }}
+              isFullView={true}
+              onToggleFullView={() => setIsAgentFullView(false)}
+              roomId={roomId}
+            />
+          )}
         </div>
       ) : (
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
@@ -737,7 +748,7 @@ export function App() {
                     whiteSpace: 'nowrap'
                   }}
                 >
-                  <span>⚡ Agent</span>
+                  <span>⚡ Antigravity App</span>
                 </button>
                 <button
                   onClick={() => setRightPanelTab('chat')}
@@ -797,28 +808,37 @@ export function App() {
               {/* Tab Content */}
               <div style={{ flex: 1, overflowY: 'auto', padding: rightPanelTab === 'cli' ? '0' : '1rem', display: 'flex', flexDirection: 'column' }}>
                 {rightPanelTab === 'cli' && (
-                  <AntigravityCLIPanel
-                    files={files}
-                    workspaceVersion={workspaceVersion}
-                    aiState={aiState}
-                    permissionMode={permissionMode}
-                    onSetPermissionMode={handleSetPermissionMode}
-                    onTriggerAI={handleTriggerAI}
-                    pendingOperation={pendingOperation}
-                    onApplyPatch={handleApplyAIPatch}
-                    onRejectPatch={handleRejectAIPatch}
-                    onReanalyzePatch={handleReanalyzeAIPatch}
-                    activeFile={activeFile}
-                    onSelectFile={(filePath) => {
-                      if (!openTabs.includes(filePath)) {
-                        setOpenTabs(prev => [...prev, filePath]);
-                      }
-                      setActiveFile(filePath);
-                    }}
-                    isFullView={false}
-                    onToggleFullView={() => setIsAgentFullView(true)}
-                    roomId={roomId}
-                  />
+                  agentViewMode === 'iframe' ? (
+                    <AntigravityIframePanel
+                      isFullView={false}
+                      onToggleFullView={() => setIsAgentFullView(true)}
+                      onSwitchToCLI={() => setAgentViewMode('cli')}
+                      roomId={roomId}
+                    />
+                  ) : (
+                    <AntigravityCLIPanel
+                      files={files}
+                      workspaceVersion={workspaceVersion}
+                      aiState={aiState}
+                      permissionMode={permissionMode}
+                      onSetPermissionMode={handleSetPermissionMode}
+                      onTriggerAI={handleTriggerAI}
+                      pendingOperation={pendingOperation}
+                      onApplyPatch={handleApplyAIPatch}
+                      onRejectPatch={handleRejectAIPatch}
+                      onReanalyzePatch={handleReanalyzeAIPatch}
+                      activeFile={activeFile}
+                      onSelectFile={(filePath) => {
+                        if (!openTabs.includes(filePath)) {
+                          setOpenTabs(prev => [...prev, filePath]);
+                        }
+                        setActiveFile(filePath);
+                      }}
+                      isFullView={false}
+                      onToggleFullView={() => setIsAgentFullView(true)}
+                      roomId={roomId}
+                    />
+                  )
                 )}
 
                 {rightPanelTab === 'chat' && (
