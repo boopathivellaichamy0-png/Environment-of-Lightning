@@ -1,42 +1,20 @@
-/* ⚡ ENVIRONMENT OF LIGHTNING - AUTHENTIC VS CODE / ANTIGRAVITY IDE DARK MODERN THEME */
-
 :root {
   --bg-app: #181818;
-  --bg-surface: #181818;
-  --bg-surface-elevated: #1e1e1e;
-  --bg-surface-hover: #2a2d2e;
-  --bg-glass-card: #202020;
-  --bg-glass-pill: #252526;
-
-  --border-subtle: #2b2b2b;
-  --border-light: #333333;
-  --border-glow: #383838;
-  --border-ai-glow: #383838;
-
-  --lightning-cyan: #cccccc;
-  --lightning-cyan-glow: transparent;
-  --lightning-cyan-subtle: #252526;
-
-  --ai-purple: #969696;
-  --ai-purple-glow: transparent;
-  --ai-purple-subtle: #252526;
-
-  --accent-amber: #cca700;
-  --accent-emerald: #89d185;
-  --accent-rose: #f14c4c;
-  --accent-blue: #0078d4;
-
+  --bg-sidebar: #181818;
+  --bg-editor: #1e1e1e;
+  --bg-input: #202020;
+  --bg-card: #252526;
+  --bg-active: #2a2d2e;
+  --border-color: #2b2b2b;
+  --border-focus: #0078d4;
   --text-primary: #cccccc;
-  --text-secondary: #969696;
-  --text-muted: #6e7681;
-
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-display: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'Consolas', 'Courier New', monospace;
-
-  --glass-blur-sm: 0px;
-  --glass-blur-md: 0px;
-  --glass-blur-lg: 0px;
+  --text-active: #ffffff;
+  --text-muted: #858585;
+  --accent-blue: #0078d4;
+  --accent-cyan: #38bdf8;
+  --accent-green: #34d399;
+  --accent-amber: #e5c07b;
+  --accent-red: #f43f5e;
 }
 
 * {
@@ -45,304 +23,35 @@
   padding: 0;
 }
 
-html, body {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
+body {
+  margin: 0;
   background-color: var(--bg-app);
   color: var(--text-primary);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Authentic VS Code Layout Root */
-#root {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: #181818;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   overflow: hidden;
+  user-select: none;
 }
 
-#root::before,
-#root::after {
-  display: none !important;
-}
-
-/* VS Code Sleek Scrollbars */
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #424242;
-  border-radius: 0px;
+  background: #333333;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #4f4f4f;
+  background: #444444;
 }
 
-/* Typography Helpers */
-.font-display { font-family: var(--font-display); }
-.font-mono { font-family: var(--font-mono); }
-
-/* VS Code Dark Modern Surfaces */
-.glass-panel {
-  background: #181818;
-  border: 1px solid var(--border-subtle);
-  box-shadow: none;
+button {
+  font-family: inherit;
 }
 
-.glass-panel-elevated {
-  background: #1e1e1e;
-  border: 1px solid var(--border-subtle);
-  box-shadow: none;
-}
-
-.glass-card {
-  background: var(--bg-glass-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: 6px;
-  box-shadow: none;
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.glass-card:hover {
-  border-color: #383838;
-  background: #252526;
-}
-
-.glass-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  background: #252526;
-  border: 1px solid var(--border-subtle);
-  border-radius: 4px;
-  padding: 0.22rem 0.55rem;
-  white-space: nowrap;
-  transition: all 0.15s ease;
-}
-
-.glass-pill:hover {
-  background: #2d2d2d;
-  border-color: #383838;
-}
-
-/* Segmented Control */
-.glass-segmented {
-  display: inline-flex;
-  align-items: center;
-  background: #1f1f1f;
-  border: 1px solid var(--border-subtle);
-  border-radius: 4px;
-  padding: 2px;
-  white-space: nowrap;
-}
-
-/* Subtle focus and indicators */
-.glow-cyan,
-.glow-purple {
-  box-shadow: none;
-}
-
-.glow-text-cyan,
-.glow-text-purple {
-  text-shadow: none;
-}
-
-/* Animations */
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes pulseGlow {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
-}
-
-.animate-pulse-glow {
-  animation: pulseGlow 2s ease infinite;
-}
-
-/* Monaco Custom Annotations & AI Markers */
-.monaco-ai-line-highlight {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border-left: 2px solid #0078d4 !important;
-}
-
-.monaco-ai-gutter-glyph {
-  background: #0078d4;
-  width: 4px !important;
-  height: 100% !important;
-  border-radius: 1px;
-}
-
-/* Remote Cursor Badges */
-.remote-cursor {
-  position: absolute;
-  border-left: 2px solid;
-  pointer-events: none;
-  z-index: 100;
-}
-
-.remote-cursor-label {
-  position: absolute;
-  top: -18px;
-  left: -2px;
-  font-size: 10px;
-  font-family: var(--font-sans);
-  font-weight: 500;
-  padding: 1px 4px;
-  border-radius: 2px;
-  color: white;
-  white-space: nowrap;
-  pointer-events: none;
-}
-
-/* VS Code Buttons */
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  padding: 0.35rem 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  border-radius: 4px;
-  background: #0078d4;
-  color: #ffffff;
-  border: 1px solid #0078d4;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s ease;
-  box-shadow: none;
-}
-
-.btn-primary:hover {
-  background: #026ec1;
-}
-
-.btn-ai {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  padding: 0.35rem 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  border-radius: 4px;
-  background: #252526;
-  color: #cccccc;
-  border: 1px solid #333333;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s ease, border-color 0.15s ease;
-  box-shadow: none;
-}
-
-.btn-ai:hover {
-  background: #2d2d2d;
-  border-color: #3c3c3c;
-  color: #ffffff;
-}
-
-.btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
-  padding: 0.35rem 0.7rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  border-radius: 4px;
-  background: #252526;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-subtle);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s ease;
-  box-shadow: none;
-}
-
-.btn-secondary:hover {
-  background: #2d2d2d;
-  color: var(--text-primary);
-  border-color: #383838;
-}
-
-.btn-icon {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.12s ease;
-  flex-shrink: 0;
-}
-
-.btn-icon:hover {
-  background: #2a2d2e;
-  color: #ffffff;
-}
-
-/* VS Code Badges & Pills */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 2px 7px;
-  font-size: 11px;
-  font-weight: 500;
-  border-radius: 4px;
-  white-space: nowrap;
-}
-
-.badge-cyan {
-  background: #252526;
-  color: #cccccc;
-  border: 1px solid #333333;
-}
-
-.badge-purple {
-  background: #252526;
-  color: #cccccc;
-  border: 1px solid #333333;
-}
-
-.badge-emerald {
-  background: #1a261c;
-  color: #89d185;
-  border: 1px solid #2b3d2d;
-}
-
-.badge-amber {
-  background: #26231a;
-  color: #e5c07b;
-  border: 1px solid #3d3725;
-}
-
-/* Divider */
-.glass-divider {
-  width: 1px;
-  height: 18px;
-  background: #2b2b2b;
-  flex-shrink: 0;
-  margin: 0 4px;
+input, textarea {
+  font-family: inherit;
 }

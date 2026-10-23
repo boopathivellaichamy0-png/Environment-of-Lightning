@@ -1,7 +1,7 @@
 {
-  "name": "eol-server",
-  "version": "1.0.0",
-  "description": "Backend server for ENVIRONMENT OF LIGHTNING Collaborative IDE",
+  "name": "eol-ide-server",
+  "version": "2.0.0",
+  "private": true,
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
@@ -13,16 +13,13 @@
     "cors": "^2.8.5",
     "diff": "^7.0.0",
     "express": "^4.21.2",
-    "uuid": "^11.0.5",
-    "ws": "^8.18.0",
-    "yjs": "^13.6.23"
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/diff": "^7.0.0",
     "@types/express": "^5.0.0",
     "@types/node": "^22.13.4",
-    "@types/uuid": "^10.0.0",
     "@types/ws": "^8.5.14",
     "tsx": "^4.19.3",
     "typescript": "^5.7.3"

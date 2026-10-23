@@ -1,30 +1,25 @@
 {
-  "name": "environment-of-lightning",
-  "version": "1.0.0",
-  "description": "⚡ ENVIRONMENT OF LIGHTNING - AI-Driven Real-Time Collaborative IDE with Antigravity CLI",
-  "main": "electron/main.cjs",
+  "name": "environment-of-lightning-ide",
+  "version": "2.0.0",
+  "description": "⚡ Environment of Lightning (EOL) - Full-Stack Collaborative AI-First IDE",
+  "private": true,
   "scripts": {
-    "server": "npm --prefix server run dev",
-    "client": "npm --prefix client run dev",
-    "build:client": "npm --prefix client run build",
-    "electron:dev": "concurrently \"npm run client\" \"wait-on http://localhost:5173 && electron .\"",
-    "electron:start": "electron .",
-    "dev": "concurrently \"npm run server\" \"npm run client\""
+    "install:all": "npm install && npm --prefix server install && npm --prefix client install",
+    "dev": "concurrently -n \"SERVER,CLIENT\" -c \"blue,cyan\" \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "build": "npm --prefix server run build && npm --prefix client run build",
+    "start": "node server/dist/index.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
   },
   "keywords": [
-    "collaborative-ide",
-    "crdt",
-    "yjs",
-    "antigravity-cli",
-    "realtime",
-    "ai-agent"
+    "ide",
+    "monaco-editor",
+    "antigravity",
+    "ai-agent",
+    "powershell",
+    "fullstack"
   ],
-  "author": "Antigravity Team",
-  "license": "MIT",
-  "devDependencies": {
-    "concurrently": "^10.0.5",
-    "cross-env": "^10.1.0",
-    "electron": "^44.4.5",
-    "wait-on": "^9.1.0"
-  }
+  "author": "EOL Team",
+  "license": "MIT"
 }

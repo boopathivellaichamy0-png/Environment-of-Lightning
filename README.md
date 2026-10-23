@@ -1,77 +1,72 @@
-# ⚡ ENVIRONMENT OF LIGHTNING (EOL)
+# ⚡ Environment of Lightning (EOL) IDE Platform
 
-> **Real-Time Collaborative AI-First IDE powered by Google's Antigravity CLI & Yjs CRDT**
-
-![Environment of Lightning](https://img.shields.io/badge/Antigravity-CLI_2.0-00f0ff?style=for-the-badge&logo=google)
-![CRDT](https://img.shields.io/badge/Synchronization-Yjs_CRDT-a855f7?style=for-the-badge)
-![React 19](https://img.shields.io/badge/Frontend-React_19_+_Vite-61dafb?style=for-the-badge&logo=react)
-![Node.js](https://img.shields.io/badge/Backend-Node_Express_WS-339933?style=for-the-badge&logo=node.js)
+A high-performance, full-stack collaborative AI-first IDE platform built from scratch with **React 19**, **Monaco Editor**, **Node.js**, **WebSockets**, and **PowerShell**.
 
 ---
 
-## 🌟 Key Highlights
+## 🌟 Key Features
 
-- **Real-Time Multiplayer Collaboration**: Instant peer-to-peer document editing powered by **Yjs CRDT** with automatic conflict resolution, presence cursors, and live activity streams.
-- **Google Antigravity CLI Integration**: Seamless bridge to `agy` running in headless stream-json mode (`--input-format stream-json --output-format stream-json`) for autonomous coding, code analysis, unified diff proposals, and multi-step reasoning.
-- **Glassmorphic Cyber-IDE Design**: High-performance UI built with dark glass panels, neon lightning accents, Monaco Editor integration, live terminal, and an interactive CLI cockpit.
-- **Bidirectional File Sync**: Automatic synchronization between in-memory CRDT buffers and the physical workspace disk (`server/workspaces/<roomId>/project/`) with monotonic `workspaceVersion` tracking.
-- **Sandboxed Execution**: Built-in system terminal execution engine for testing and building full-stack projects directly in the room workspace.
+1. **Multi-Tab Monaco Editor**:
+   - The same high-performance editor engine that powers VS Code.
+   - Syntax highlighting for JavaScript, TypeScript, HTML, CSS, JSON, Python, and Markdown.
+   - Breadcrumb navigation, tab close, and automatic 400ms debounced auto-save.
 
----
+2. **Real PowerShell Terminal**:
+   - Spawns real host PowerShell sessions via Node.js child processes.
+   - Bidirectional WebSocket streaming for interactive commands (`dir`, `node`, `git status`, `npm run dev`).
+   - Command history navigation with `Up` / `Down` arrow keys.
 
-## 🏗️ Architecture
+3. **Live Browser Preview & Code Runner**:
+   - Instantly bundles `index.html`, `style.css`, and `app.js` into an interactive live browser preview.
+   - Responsive device width toggles: Desktop (100%), Tablet (768px), and Mobile (375px).
+   - Hot reloading and external tab pop-out.
 
-```
-Environment of Lightning (EOL)
-├── client/                     # Vite + React 19 + TypeScript + Monaco Editor
-│   ├── src/
-│   │   ├── components/         # AntigravityCLIPanel, CodeEditor, Terminal, Presence
-│   │   ├── styles/             # Modern Glassmorphic Cyberpunk Theme
-│   │   └── App.tsx             # Room state & WebSocket dispatcher
-│   └── package.json
-├── server/                     # Node.js + Express + WebSocket + Yjs Engine
-│   ├── src/
-│   │   ├── index.ts            # Server entrypoint & WebSocket multiplexer
-│   │   ├── YjsRoomManager.ts   # In-memory Y.Doc & Y.Text CRDT synchronization
-│   │   ├── WorkspaceManager.ts # Disk workspace manager
-│   │   ├── PersistenceScheduler.ts # 1-second auto-save to disk
-│   │   ├── Database.ts         # Persistent room, chat, and terminal store
-│   │   └── types.ts            # Type definitions
-│   └── package.json
-└── package.json                # Root orchestrator
-```
+4. **Antigravity AI Agent Engine**:
+   - Autonomous tool-calling loop equipped with:
+     - `view_file`: inspects workspace files
+     - `write_file`: generates new files
+     - `replace_content`: surgical code edits
+     - `run_command`: executes shell scripts
+     - `list_files`: views workspace directory structure
+   - Displays real-time tool execution cards, AST unified diff proposals, and one-click **Apply** / **Reject** buttons.
+
+5. **VS Code Dark Modern Aesthetic**:
+   - Authentic matte dark palette (`#181818`, `#1e1e1e`, `#252526`, `#2b2b2b`, `#333333`, `#0078d4`).
+   - 48px Activity Bar with Explorer, Search, Preview, Terminal, and AI toggles.
 
 ---
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Node.js (v18+)
-- npm or pnpm
-- Google Antigravity CLI (`agy`) installed and authenticated
-
-### Setup & Run
-
-1. **Install Dependencies**:
-```bash
+### 1. Install Dependencies
+```powershell
 npm install
 npm --prefix server install
 npm --prefix client install
 ```
 
-2. **Start Backend Server**:
-```bash
-npm --prefix server run dev
-# Server listens on http://localhost:3001
+### 2. Run Both Server & Client Concurrently
+```powershell
+npm run dev
 ```
-
-3. **Start Client Frontend**:
-```bash
-npm --prefix client run dev
-# Client runs at http://localhost:5173
-```
+- **Backend Server**: `http://localhost:3001` (WebSocket on `ws://localhost:3001`)
+- **Frontend IDE**: `http://localhost:5173`
 
 ---
 
-## 📜 License
-MIT License. Built with ⚡ by the Environment of Lightning Team.
+## 📦 Directory Structure
+```
+EOL/
+├── server/               # Node.js + Express + WebSocket backend
+│   └── src/
+│       ├── index.ts      # HTTP & WebSocket multiplexer
+│       ├── fileSystem.ts # Workspace disk I/O
+│       ├── terminal.ts   # PowerShell process executor
+│       └── aiAgent.ts    # Antigravity AI Agent engine with tool loop
+├── client/               # Vite + React 19 + Monaco Editor frontend
+│   └── src/
+│       ├── components/   # ActivityBar, FileExplorer, EditorPane, TerminalPane, LivePreviewPane, AIAgentPane
+│       ├── hooks/        # useWebSocket hook
+│       └── App.tsx       # Main IDE workbench
+└── workspace/            # Active project workspace files
+```
